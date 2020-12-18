@@ -1,0 +1,14 @@
+{
+    "name": "image-hover",
+    "title": "Image Hover",
+    "description": "This module allows users to see character art while hovering over a token.",
+    "version": "1.0.0",
+    "minimumCoreVersion": "0.7.7",
+    "compatibleCoreVersion": "0.7.7",
+    "author": "Brussel Sprouts#2108",
+    "systems": ["dnd5e"],
+    "esmodules": ["image-hover.js"],
+    "url": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/tree/main",
+    "manifest": "https://raw.githubusercontent.com/Eriku33/Foundry-VTT-Image-Hover/main/module.json",
+    "download": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/raw/main/image-hover.zip"
+}
