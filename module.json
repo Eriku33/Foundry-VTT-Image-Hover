@@ -6,7 +6,6 @@
     "minimumCoreVersion": "0.7.7",
     "compatibleCoreVersion": "0.7.7",
     "author": "Brussel Sprouts#2108",
-    "systems": ["dnd5e"],
     "esmodules": ["image-hover.js"],
     "url": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/tree/main",
     "manifest": "https://raw.githubusercontent.com/Eriku33/Foundry-VTT-Image-Hover/main/module.json",
