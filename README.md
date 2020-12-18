@@ -9,7 +9,7 @@
 
 ## Description
 A simple module that allows players to hover over actor tokens and see the character art.
-![preview](pics/muk%20muk.PNG?raw=true)
+![preview](pics/image-hover-pic.PNG?raw=true)
 
 ## Installation
 To install, follow these instructions:
