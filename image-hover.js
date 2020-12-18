@@ -19,8 +19,8 @@ Hooks.on("init", function() {
 
     // client setting
     game.settings.register("image-hover", "userEnableModule", {
-      name: "Enable/disable Image Hover",                               // Setting name
-      hint: "Uncheck to disable Image Hover (Per player).",              // Setting description
+      name: "Enable/Disable Image Hover",                               // Setting name
+      hint: "Uncheck to disable Image Hover (per user).",               // Setting description
       scope: "client",      // client-stored setting
       config: true,         // Show setting in configuration view
       type: Boolean,        // Value type
@@ -29,8 +29,8 @@ Hooks.on("init", function() {
 
     // client setting
     game.settings.register("image-hover", "userImagePosition", {
-      name: "Position of image",                                                             // Setting name
-      hint: "Set the image position to the top left or bottom left of the screen (Per player).",     // Setting description
+      name: "Position of image",                                                                    // Setting name
+      hint: "Set the image position to the top left or bottom left of the screen (per user).",      // Setting description
       scope: "client",          // Client-stored setting
       config: true,             // Show setting in configuration view
       choices: {                // Choices
@@ -43,8 +43,8 @@ Hooks.on("init", function() {
 
     // client setting
     game.settings.register("image-hover", "userImageSize", {
-        name: "Image size (1/Value of your screen width)",                                    // Setting name
-        hint: "Changes the size of the image (Per player), smaller value implies larger image.",     // Setting description
+        name: "Image to monitor width",                                    // Setting name
+        hint: "Changes the size of the image (per user), smaller value implies larger image (1/value of your screen width).",     // Setting description
         scope: "client",        // Client-stored setting
         config: true,           // Show setting in configuration view
         range: {                // Choices
