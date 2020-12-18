@@ -11,11 +11,11 @@
 To install, follow these instructions:
 
 1.  Inside Foundry, select the Game Modules tab in the Configuration and Setup menu.
-2.  Click the Install Module button and enter the following URL: https://raw.githubusercontent.com/Eriku33/Foundry-VTT-Image-Hover/main/module.json
+2.  Click the Install Module button and enter the following URL:<br>https://raw.githubusercontent.com/Eriku33/Foundry-VTT-Image-Hover/main/module.json
 
 ## Description
 A simple module that allows players to hover over actor tokens and see the character art.<br>
-User must be on the token layer to see the character art, if no character exists, token art is used instead.
+User must be on the token layer to see the character art, if no character art exists (default icon), token art is used instead.
 ![preview](pics/image-hover-pic.PNG?raw=true)
 
 ### Settings
