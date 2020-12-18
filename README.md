@@ -29,5 +29,5 @@ Default: On
 Each user can have the character art show up at the top left or bottom right of their screen.<br>
 Default: Bottom Left
 ### Image to monitor width
-Each user can configure the size of the image base on the width of their monitor.<br>
+Each user can configure the size of the image based on the width of their monitor.<br>
 Default: 7 - Image will take up <sup>1</sup>&frasl;<sub>7</sub>th of your screen.
