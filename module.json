@@ -2,7 +2,7 @@
     "name": "image-hover",
     "title": "Image Hover",
     "description": "This module allows users to see character art while hovering over a token.",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "minimumCoreVersion": "0.7.7",
     "compatibleCoreVersion": "0.7.7",
     "author": "Brussel Sprouts#2108",

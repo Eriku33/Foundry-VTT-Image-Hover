@@ -169,19 +169,20 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
  * Must be used on the token layer and have relevant actor permissions (configurable settings by the game master)
  */
 Hooks.on('hoverToken', (token, hovered) => {
-	if (!token || !token.actor)                                                                 // Check if token is a actor
+	if (!token || !token.actor)                                                           // Check if token is a actor
             return;
 
-        const actorRequirementLevel = game.settings.get('image-hover', 'permissionOnHover');    
-        const showPreview = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
+    const actorRequirementLevel = game.settings.get('image-hover', 'permissionOnHover');    
+    const showPreview = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
 
-        if (token.actor.data.permission['default'] !== -1) {                              // some reason Foundry sets the default to -1 instead of 0
-            if (token.actor.permission < actorRequirementLevel || showPreview === false)
-        	    return;
-        }
-        if (hovered && canvas.activeLayer.name == 'TokenLayer') {       // Show token image if hovered, otherwise don't
-		    canvas.hud.imageHover.bind(token);
-        } else {
-            canvas.hud.imageHover.clear();
-        }
+    if (showPreview === false)
+        return;
+    if (token.actor.permission < actorRequirementLevel && token.actor.data.permission['default'] !== -1)    // actors made before October 2020 has permissions set to -1 (fixed foundry bug)
+        return;
+    
+    if (hovered && canvas.activeLayer.name == 'TokenLayer') {       // Show token image if hovered, otherwise don't
+        canvas.hud.imageHover.bind(token);
+    } else {
+        canvas.hud.imageHover.clear();
+    }
 });
