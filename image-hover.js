@@ -174,9 +174,11 @@ Hooks.on('hoverToken', (token, hovered) => {
 
         const actorRequirementLevel = game.settings.get('image-hover', 'permissionOnHover');    
         const showPreview = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
-        if (token.actor.permission < actorRequirementLevel || showPreview === false)
-        	return;
 
+        if (token.actor.data.permission['default'] !== -1) {                              // some reason Foundry sets the default to -1 instead of 0
+            if (token.actor.permission < actorRequirementLevel || showPreview === false)
+        	    return;
+        }
         if (hovered && canvas.activeLayer.name == 'TokenLayer') {       // Show token image if hovered, otherwise don't
 		    canvas.hud.imageHover.bind(token);
         } else {
