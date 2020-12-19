@@ -174,14 +174,18 @@ Hooks.on('hoverToken', (token, hovered) => {
 
     const actorRequirementLevel = game.settings.get('image-hover', 'permissionOnHover');    
     const showPreview = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
+    const tokenActor = token.actor;
 
-    if (showPreview === false)
-        return;
-    if (token.actor.permission < actorRequirementLevel && token.actor.data.permission['default'] !== -1)    // actors made before October 2020 has permissions set to -1 (fixed foundry bug)
-        return;
+    /**
+     * Check game master did not restrict permissions to see character art.
+     * Actors made before October 2020? have default permissions set to -1 (was a foundry bug?)
+     * Hack works because on any actor permission change, default permissions get set to the correct value.
+     */
+    if (showPreview === false || (tokenActor.permission < actorRequirementLevel && tokenActor.data.permission['default'] !== -1))
+        return;  
     
     if (hovered && canvas.activeLayer.name == 'TokenLayer') {       // Show token image if hovered, otherwise don't
-        canvas.hud.imageHover.bind(token);
+        canvas.hud.imageHover.bind(token);                          // Check on TokenLayer (can be changed)
     } else {
         canvas.hud.imageHover.clear();
     }
