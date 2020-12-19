@@ -3,15 +3,15 @@
 # Image-Hover
 
 * **Author**: Brussel Sprouts#2108 (Discord)
-* **Version**: 1.0.0
+* **Version**: 1.0.3
 * **Foundry VTT Compatibility**: 0.7.7
 * **System Compatibility**: dnd5e and maybe others but have not checked.
 
 ## Installation
-To install, follow these instructions:
+To install, search for Image Hover in the module list or follow these instructions:
 
 1.  Inside Foundry, select the Game Modules tab in the Configuration and Setup menu.
-2.  Click the Install Module button and enter the following URL:<br>https://raw.githubusercontent.com/Eriku33/Foundry-VTT-Image-Hover/main/module.json
+2.  Click the Install Module button and enter the following URL:<br>https://raw.githubusercontent.com/Eriku33/Foundry-VTT-Image-Hover/main/module.json.
 
 ## Description
 A simple module that allows players to hover over actor tokens and see the character art.<br>
