@@ -2,7 +2,7 @@
 
 # Image-Hover
 
-* **Author**: Brussel Sprouts#2108 (Discord)
+* **Author**: Eriku#2108 (Discord)
 * **Version**: 1.0.3
 * **Foundry VTT Compatibility**: 0.7.7
 * **System Compatibility**: dnd5e and maybe others but have not checked.
