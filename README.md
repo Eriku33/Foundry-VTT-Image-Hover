@@ -16,9 +16,10 @@ To install, follow these instructions:
 ## Description
 A simple module that allows players to hover over actor tokens and see the character art.<br>
 User must be on the token layer to see the character art, if no character art exists (default icon), token art is used instead.
-![preview](pics/image-hover-pic.PNG?raw=true)
+![image-hover-example](pics/image-hover-example.gif)
 
 ## Settings
+![preview](pics/image-hover-pic.PNG?raw=true)
 ### Required actor permission
 Setting for game masters to configure the required actor ownership to see character art.<br>
 Default: None - All users can hover over any token and see character art.
