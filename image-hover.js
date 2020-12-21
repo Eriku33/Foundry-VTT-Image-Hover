@@ -1,63 +1,8 @@
-Hooks.on("init", function() {
+import { registerSettings } from './settings.js';
 
-    // Game master setting
-    game.settings.register("image-hover", "permissionOnHover", {
-        name: "Required actor permission",                              // Setting name
-        hint: "Required permission level of Actor to see handout.",     // Setting description
-        scope: "world",         // Global setting
-        config: true,           // Show setting in configuration view
-        restricted: true,       // Game master only   
-        choices: {              // Choices
-            "0": "None",
-            "1": "Limited",
-            "2": "Observer",
-            "3": "Owner"
-        },
-        default: "0",           // Default value
-        type: Number            // Value type
-    });
-
-    // client setting
-    game.settings.register("image-hover", "userEnableModule", {
-      name: "Enable/Disable Image Hover",                               // Setting name
-      hint: "Uncheck to disable Image Hover (per user).",               // Setting description
-      scope: "client",      // client-stored setting
-      config: true,         // Show setting in configuration view
-      type: Boolean,        // Value type
-      default: true,        // The default value for the setting
-    });
-
-    // client setting
-    game.settings.register("image-hover", "userImagePosition", {
-      name: "Position of image",                                                                    // Setting name
-      hint: "Set the image position to the top left or bottom left of the screen (per user).",      // Setting description
-      scope: "client",          // Client-stored setting
-      config: true,             // Show setting in configuration view
-      choices: {                // Choices
-        "Top": "Top Left",
-        "Bottom": "Bottom Left"
-      },
-      default: "Bottom",        // Default Value
-      type: String              // Value type
-    });
-
-    // client setting
-    game.settings.register("image-hover", "userImageSize", {
-        name: "Image to monitor width",                                    // Setting name
-        hint: "Changes the size of the image (per user), smaller value implies larger image (1/value of your screen width).",     // Setting description
-        scope: "client",        // Client-stored setting
-        config: true,           // Show setting in configuration view
-        range: {                // Choices
-            min: 3,
-            max: 20,
-            step: 0.5
-        },
-        default: 7,             // Default Value
-        type: Number            // Value type
-        });
-
-    
-});
+/**
+ * Copy Placeable HUD template
+ */
 
 class ImageHoverHUD extends BasePlaceableHUD {
 
@@ -71,12 +16,12 @@ class ImageHoverHUD extends BasePlaceableHUD {
             classes: [...super.defaultOptions.classes, 'image-hover-hud'],      // Use default "placeable-hud"
             minimizable: false,
             resizable: false,
-	        template: "modules/image-hover/templates/image-hover-template.html"
+	        template: "modules/image-hover/templates/image-hover-template.html" // HTML template
         });
     };
 
     /**
-     * Get the image we want to show
+     * Get image for html template
      */
 
     getData() {
@@ -95,35 +40,19 @@ class ImageHoverHUD extends BasePlaceableHUD {
     
     setPosition() {
         if (!this.object) return;
-
         /**
-         * Here we decide how we want to scale our image into our window size
+         * Here we scale our image corrosponding to the window size.
          */
-
-        var imageHover = this;
-        var center = canvas.scene._viewPosition;                                // Middle of the screen
-        const imageSize = game.settings.get('image-hover', 'userImageSize');
-        var widthScale = window.innerWidth/(imageSize*center.scale);            // Scaling to be configured
-        const image = imageHover.object.actor.img;                              // Image
-
-        /**
-         * Preload the image to fit our scale and apply it to the element
-         * Allow a configuration setting for the position of our image
-         */
-
-        this.fitImageDimensions(image, widthScale, function(heightPixels){      // Had to do this in a callback
-            var yAxis = imageHover.ChangePosition(heightPixels, center);
-            var xAxis = center.x - (window.innerWidth/(2*center.scale));
-            const position = {                                                  // CSS
-                width: widthScale,
-                height: "auto",
-                left: xAxis,
-                top: yAxis,
-                textAlign: "inherit"
-            };
-            imageHover.element.css(position);                                   // Apply CSS to element
-        });
+        this.updatePosition();
     };
+
+    /**
+     * 
+     * @param {String} image Character art we want to show
+     * @param {Number} widthScale Width of image in pixels
+     * @param {*} callback 
+     * Get the size of the image and rescale it to find pixel height, we need this to correct the positioning when the image is at the bottom.
+     */
 
     fitImageDimensions (image, widthScale, callback){
         const img = new Image();
@@ -139,9 +68,9 @@ class ImageHoverHUD extends BasePlaceableHUD {
      * Load image and relocate image based on height(Canvas pixels) to fit screen
      */
 
-    ChangePosition(heightPixels, center) {
-        const imagePosition = game.settings.get('image-hover', 'userImagePosition')
-        if (imagePosition === 'Bottom'){
+    changePosition(heightPixels, center) {
+        const imagePositionSetting = game.settings.get('image-hover', 'userImagePosition')
+        if (imagePositionSetting === 'Bottom'){
             var yAxis = center.y - heightPixels + (window.innerHeight/(2*center.scale));
         }
         else {
@@ -149,6 +78,35 @@ class ImageHoverHUD extends BasePlaceableHUD {
         };
         return yAxis;
     }
+
+    /**
+     * While hovering over a token and zooming or moving screen position, we want to reposition the image and scale it.
+     */
+
+    updatePosition() {
+        const imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
+        const imageHover = canvas.hud.imageHover;
+        const center = canvas.scene._viewPosition;                                  // Middle of the screen
+        const widthScale = window.innerWidth/(imageSizeSetting*center.scale);       // Scaling to be configured
+        const image = imageHover.object.actor.img;                                  // character art
+        
+        /**
+         * Preload the image to fit our scale and apply it to our template.
+         */
+
+        imageHover.fitImageDimensions(image, widthScale, function(heightPixels){      // Had to do this in a callback
+            var yAxis = imageHover.changePosition(heightPixels, center);
+            var xAxis = center.x - (window.innerWidth/(2*center.scale));
+            const position = {                                                  // CSS
+                width: widthScale,
+                height: "auto",
+                left: xAxis,
+                top: yAxis,
+                textAlign: "inherit"
+            };
+            imageHover.element.css(position);                                   // Apply CSS to element
+        });
+    };
 };
 
 /**
@@ -158,7 +116,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
 
 Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
 
-    html[0].style.zIndex = 60;                                      // Sets image to show above other UI. This is definately a hack!
+    html[0].style.zIndex = 70;                                      // Sets image to show above other UI. This is definately a hack!
     html.append(`<template id="image-hover-hud"></template>`);
     canvas.hud.imageHover = new ImageHoverHUD();
 
@@ -168,25 +126,47 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
  * Display image when user hovers mouse over a actor
  * Must be used on the token layer and have relevant actor permissions (configurable settings by the game master)
  */
+
 Hooks.on('hoverToken', (token, hovered) => {
 	if (!token || !token.actor)                                                           // Check if token is a actor
             return;
 
-    const actorRequirementLevel = game.settings.get('image-hover', 'permissionOnHover');    
-    const showPreview = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
-    const tokenActor = token.actor;
-
-    /**
-     * Check game master did not restrict permissions to see character art.
-     * Actors made before October 2020? have default permissions set to -1 (was a foundry bug?)
-     * Hack works because on any actor permission change, default permissions get set to the correct value.
-     */
-    if (showPreview === false || (tokenActor.permission < actorRequirementLevel && tokenActor.data.permission['default'] !== -1))
-        return;  
+    const actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');    
+    const showPreviewSetting = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
+    if (showPreviewSetting === false)
+        return;
+    if (token.actor.permission < actorRequirementSetting && token.actor.data.permission['default'] !== -1)    // actors made before October 2020 has permissions set to -1 (fixed foundry bug)
+        return;
     
     if (hovered && canvas.activeLayer.name == 'TokenLayer') {       // Show token image if hovered, otherwise don't
-        canvas.hud.imageHover.bind(token);                          // Check on TokenLayer (can be changed)
+        canvas.hud.imageHover.bind(token);
     } else {
         canvas.hud.imageHover.clear();
-    }
+    };
+});
+
+/**
+ * Remove character art when dragging token (Hover hook doesn't trigger while token movement animation is on).
+ */
+
+Hooks.on("preUpdateToken", (...args) => {
+    canvas.hud.imageHover.clear();       
+});
+
+/**
+ * When user scrolls/moves the screen position, we want to relocate the image.
+ */
+
+Hooks.on("canvasPan", (...args) => {
+    if (typeof canvas.hud.imageHover !== 'undefined' && (canvas.hud.imageHover.object !== null)) {
+        canvas.hud.imageHover.updatePosition();
+    };
+});
+
+/**
+ * On Foundry world load, register module settings.
+ */
+
+Hooks.on("init", function() {
+    registerSettings();
 });
