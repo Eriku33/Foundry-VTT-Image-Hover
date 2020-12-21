@@ -1,6 +1,6 @@
 ![](https://img.shields.io/badge/Foundry-v0.7.7-informational)
 
-# Image-Hover
+# Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
 * **Version**: 1.0.3
