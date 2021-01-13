@@ -3,8 +3,8 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 1.0.3
-* **Foundry VTT Compatibility**: 0.7.7
+* **Version**: 1.0.5
+* **Foundry VTT Compatibility**: 0.7.7+
 * **System Compatibility**: dnd5e and maybe others but have not checked.
 
 ## Installation
