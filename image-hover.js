@@ -1,5 +1,19 @@
 import { registerSettings } from './settings.js';
 
+// Store a reference to requirement settings to see character art
+let actorRequirementSetting = "None";
+
+// Store a reference to whether artwork will be shown
+let showPreviewSetting = true;
+
+// Store a reference to where the character art will appear
+let imagePositionSetting = "Bottom";
+
+// Store a reference to the size of artwork shown
+let imageSizeSetting = 7;
+
+
+
 /**
  * Copy Placeable HUD template
  */
@@ -15,7 +29,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
             id: "image-hover-hud",
             classes: [...super.defaultOptions.classes, 'image-hover-hud'],      // Use default "placeable-hud"
             minimizable: false,
-            resizable: false,
+            resizable: true,
 	        template: "modules/image-hover/templates/image-hover-template.html" // HTML template
         });
     };
@@ -26,10 +40,10 @@ class ImageHoverHUD extends BasePlaceableHUD {
 
     getData() {
         const data = super.getData();
-        const actor = this.object.actor;
-        data.img = actor.img;
+        const tokenObject = this.object;
+        data.img = tokenObject.actor.img;
 	    if (data.img == 'icons/svg/mystery-man.svg') {      // If no character art exists, use token art instead.
-		    data.img = actor.data.token.img;
+		    data.img = tokenObject.data.img;
         }
         return data;
     };
@@ -69,7 +83,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
      */
 
     changePosition(heightPixels, center) {
-        const imagePositionSetting = game.settings.get('image-hover', 'userImagePosition')
+        //const imagePositionSetting = game.settings.get('image-hover', 'userImagePosition')
         if (imagePositionSetting === 'Bottom'){
             var yAxis = center.y - heightPixels + (window.innerHeight/(2*center.scale));
         }
@@ -84,11 +98,15 @@ class ImageHoverHUD extends BasePlaceableHUD {
      */
 
     updatePosition() {
-        const imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
+        //const imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
         const imageHover = canvas.hud.imageHover;
         const center = canvas.scene._viewPosition;                                  // Middle of the screen
         const widthScale = window.innerWidth/(imageSizeSetting*center.scale);       // Scaling to be configured
-        const image = imageHover.object.actor.img;                                  // character art
+        let image = imageHover.object.actor.img;                                    // character art
+
+        if (image == 'icons/svg/mystery-man.svg') {      // If no character art exists, scale image using token art.
+		    image = imageHover.object.data.img;
+        };
         
         /**
          * Preload the image to fit our scale and apply it to our template.
@@ -99,10 +117,8 @@ class ImageHoverHUD extends BasePlaceableHUD {
             var xAxis = center.x - (window.innerWidth/(2*center.scale));
             const position = {                                                  // CSS
                 width: widthScale,
-                height: "auto",
                 left: xAxis,
                 top: yAxis,
-                textAlign: "inherit"
             };
             imageHover.element.css(position);                                   // Apply CSS to element
         });
@@ -131,8 +147,8 @@ Hooks.on('hoverToken', (token, hovered) => {
 	if (!token || !token.actor)                                                           // Check if token is a actor
             return;
 
-    const actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');    
-    const showPreviewSetting = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
+    //const actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');    
+    //const showPreviewSetting = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
     if (showPreviewSetting === false)
         return;
     if (token.actor.permission < actorRequirementSetting && token.actor.data.permission['default'] !== -1)    // actors made before October 2020 has permissions set to -1 (fixed foundry bug)
@@ -167,6 +183,11 @@ Hooks.on("canvasPan", (...args) => {
  * On Foundry world load, register module settings.
  */
 
-Hooks.on("init", function() {
-    registerSettings();
+Hooks.on("init", registerSettings);
+
+Hooks.on("closeSettingsConfig", function() {
+    actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');
+    showPreviewSetting = game.settings.get('image-hover', 'userEnableModule');
+    imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
+    imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
 });
