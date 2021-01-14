@@ -1,3 +1,7 @@
 <div id="{{id}}" class="{{classes}}">
-	<img src={{img}} style="width:100%;"></img>
+	{{#if isImage}}
+  		<img src={{url}} style="width:100%;"></img>
+	{{else}}
+  		<video src={{url}} autoplay loop style="width:100%;"></video>
+	{{/if}}
 </div>
