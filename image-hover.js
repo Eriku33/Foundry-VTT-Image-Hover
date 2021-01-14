@@ -1,18 +1,26 @@
-import { registerSettings } from './settings.js';
+import { Settings } from './settings.js';
 
 // Store a reference to requirement settings to see character art
 let actorRequirementSetting = "None";
-
 // Store a reference to whether artwork will be shown
 let showPreviewSetting = true;
-
 // Store a reference to where the character art will appear
 let imagePositionSetting = "Bottom";
-
 // Store a reference to the size of artwork shown
 let imageSizeSetting = 7;
 
+//The supported file extensions for image-type files
+const imageFileExtentions = ["jpg", "jpeg", "png", "svg", "webp"];
 
+//The supported file extensions for video-type files
+const VIDEO_FILE_EXTENSIONS = ["mp4", "ogg", "webm", "m4v"];
+
+function registerModuleSettings() {
+    actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');
+    showPreviewSetting = game.settings.get('image-hover', 'userEnableModule');
+    imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
+    imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
+};
 
 /**
  * Copy Placeable HUD template
@@ -35,16 +43,19 @@ class ImageHoverHUD extends BasePlaceableHUD {
     };
 
     /**
-     * Get image for html template
+     * Get image data for html template
      */
 
     getData() {
         const data = super.getData();
         const tokenObject = this.object;
-        data.img = tokenObject.actor.img;
-	    if (data.img == 'icons/svg/mystery-man.svg') {      // If no character art exists, use token art instead.
-		    data.img = tokenObject.data.img;
+        let image = tokenObject.actor.img                   // Character art
+	    if (image == 'icons/svg/mystery-man.svg') {         // If no character art exists, use token art instead.
+		    image = tokenObject.data.img;
         }
+        data.url = image
+        const fileExt =image.substr(image.lastIndexOf('.') + 1);     // check file extention
+        if (imageFileExtentions.includes(fileExt)) data.isImage = true      // if the file is not a image, we want to use the video html tag
         return data;
     };
 
@@ -61,67 +72,85 @@ class ImageHoverHUD extends BasePlaceableHUD {
     };
 
     /**
-     * 
-     * @param {String} image Character art we want to show
-     * @param {Number} widthScale Width of image in pixels
-     * @param {*} callback 
-     * Get the size of the image and rescale it to find pixel height, we need this to correct the positioning when the image is at the bottom.
+     * Returns the dimensions of a image/video asynchrounsly.
+     * @param {String} url Url of the image/video to get dimensions from.
+     * @return {Promise} Promise which returns the dimensions of the image/video in 'width' and 'height' properties.
      */
+    loadSourceDimensions(url) {
+        return new Promise(resolve => {
+            const fileExt = url.substr(url.lastIndexOf('.') + 1);
+            if (imageFileExtentions.includes(fileExt)) {
+                const img = new Image();
+                img.addEventListener('load', function () {                          // listen to load event for image
+                    resolve({                   
+                        width : this.width,                                // send back result
+                        height : this.height
+                    });
+                });
+                img.src = url;
 
-    fitImageDimensions (image, widthScale, callback){
-        const img = new Image();
-        img.onload = function() {                                               // Get rescaled height of image in pixels
-            const widthPixels = this.width/widthScale;
-            const heightPixels = this.height/widthPixels;
-            callback(heightPixels);
-        }       
-        img.src = image;                                                        // Load image
-    }
+            } else {
+                const video = document.createElement('video');                    // create the video element
+                video.addEventListener( "loadedmetadata", function () {         // place a listener on it
+                    resolve({        
+                        width : this.videoWidth,                                           // send back result
+                        height : this.videoHeight
+                    });
+                });
+                video.src = url;                                                // start download meta-data
+            };
+        });
+    };
 
     /**
-     * Load image and relocate image based on height(Canvas pixels) to fit screen
+     * 
+     * @param {Number} width width or original image (pixles)
+     * @param {Number} height height of original image (pixels)
+     * @param {Number} widthScale width of image related to screen size (pixels)
+     * @param {Number} center Middle of the screen with scaling (pixels)
+     * Rescale original image and move to correct location within the canvas
      */
 
-    changePosition(heightPixels, center) {
-        //const imagePositionSetting = game.settings.get('image-hover', 'userImagePosition')
-        if (imagePositionSetting === 'Bottom'){
+    changePosition(width, height, widthScale, center) {
+        const widthPixels = width/widthScale;
+        const heightPixels = height/widthPixels;
+        if (imagePositionSetting === 'Bottom'){                                     // move image to bottom of screen
             var yAxis = center.y - heightPixels + (window.innerHeight/(2*center.scale));
         }
         else {
             var yAxis = center.y - (window.innerHeight/(2*center.scale));
         };
         return yAxis;
-    }
+    };
 
     /**
      * While hovering over a token and zooming or moving screen position, we want to reposition the image and scale it.
      */
 
     updatePosition() {
-        //const imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
-        const imageHover = canvas.hud.imageHover;
-        const center = canvas.scene._viewPosition;                                  // Middle of the screen
-        const widthScale = window.innerWidth/(imageSizeSetting*center.scale);       // Scaling to be configured
-        let image = imageHover.object.actor.img;                                    // character art
+        let imageHover = canvas.hud.imageHover;
+        let center = canvas.scene._viewPosition;                                  // Middle of the screen
+        let widthScale = window.innerWidth/(imageSizeSetting*center.scale);       // Scaling to be configured
+        let url = imageHover.object.actor.img;                                    // character art
 
-        if (image == 'icons/svg/mystery-man.svg') {      // If no character art exists, scale image using token art.
-		    image = imageHover.object.data.img;
+        if (url == 'icons/svg/mystery-man.svg') {      // If no character art exists, use token art instead.
+		    url = imageHover.object.data.img;
         };
         
         /**
-         * Preload the image to fit our scale and apply it to our template.
+         * Preload the image to find the width/height then rescale to find x,y positions
          */
 
-        imageHover.fitImageDimensions(image, widthScale, function(heightPixels){      // Had to do this in a callback
-            var yAxis = imageHover.changePosition(heightPixels, center);
-            var xAxis = center.x - (window.innerWidth/(2*center.scale));
+        imageHover.loadSourceDimensions(url).then(({width, height}) => {
+            const yAxis = imageHover.changePosition(width, height, widthScale, center);   // move image to correct verticle position.
+            const xAxis = center.x - (window.innerWidth/(2*center.scale));                // move image to left of screen
             const position = {                                                  // CSS
                 width: widthScale,
                 left: xAxis,
                 top: yAxis,
             };
             imageHover.element.css(position);                                   // Apply CSS to element
-        });
+        })
     };
 };
 
@@ -147,8 +176,6 @@ Hooks.on('hoverToken', (token, hovered) => {
 	if (!token || !token.actor)                                                           // Check if token is a actor
             return;
 
-    //const actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');    
-    //const showPreviewSetting = game.settings.get('image-hover', 'userEnableModule');             // Get some configurable game settings
     if (showPreviewSetting === false)
         return;
     if (token.actor.permission < actorRequirementSetting && token.actor.data.permission['default'] !== -1)    // actors made before October 2020 has permissions set to -1 (fixed foundry bug)
@@ -183,11 +210,11 @@ Hooks.on("canvasPan", (...args) => {
  * On Foundry world load, register module settings.
  */
 
-Hooks.on("init", registerSettings);
+Hooks.on("init", function() {
+    Settings.createSettings()
+    registerModuleSettings()
+});
 
 Hooks.on("closeSettingsConfig", function() {
-    actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');
-    showPreviewSetting = game.settings.get('image-hover', 'userEnableModule');
-    imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
-    imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
+    registerModuleSettings()
 });
