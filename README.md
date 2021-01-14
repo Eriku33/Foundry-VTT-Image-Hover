@@ -3,7 +3,7 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 1.0.5
+* **Version**: 1.0.6
 * **Foundry VTT Compatibility**: 0.7.7+
 * **System Compatibility**: dnd5e and maybe others but have not checked.
 
@@ -16,7 +16,7 @@ To install, search for Image Hover in the module list or follow these instructio
 ## Description
 A simple module that allows players to hover over actor tokens and see the character art.<br>
 User must be on the token layer to see the character art, if no character art exists (default icon), token art is used instead.
-![image-hover-example](pics/image-hover-example.gif)
+![image-hover-animation-example](pics/image-hover-animation-example.gif)
 
 ## Settings
 ![preview](pics/image-hover-pic.PNG?raw=true)
