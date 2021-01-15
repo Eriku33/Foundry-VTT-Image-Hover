@@ -9,6 +9,9 @@ let imagePositionSetting = "Bottom";
 // Store a reference to the size of artwork shown
 let imageSizeSetting = 7;
 
+// Check if Tokenizer Module active for compatibility. (Undefined if module not installed)
+let tokenizerActive = false;
+
 //The supported file extensions for image-type files
 const imageFileExtentions = ["jpg", "jpeg", "png", "svg", "webp"];
 
@@ -20,6 +23,7 @@ function registerModuleSettings() {
     showPreviewSetting = game.settings.get('image-hover', 'userEnableModule');
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
+    tokenizerActive = game.modules.get("vtta-tokenizer")?.active
 };
 
 /**
@@ -54,7 +58,10 @@ class ImageHoverHUD extends BasePlaceableHUD {
 		    image = tokenObject.data.img;
         }
         data.url = image
-        const fileExt =image.substr(image.lastIndexOf('.') + 1);     // check file extention
+        let fileExt =image.substring(image.lastIndexOf('.') + 1);           // check file extention
+        if (tokenizerActive && (fileExt.includes('?'))) {
+            fileExt = fileExt.substring(0, fileExt.lastIndexOf('?'));       // remove '?432453' on the end of files from Tokenizer module
+        }
         if (imageFileExtentions.includes(fileExt)) data.isImage = true      // if the file is not a image, we want to use the video html tag
         return data;
     };
@@ -78,7 +85,10 @@ class ImageHoverHUD extends BasePlaceableHUD {
      */
     loadSourceDimensions(url) {
         return new Promise(resolve => {
-            const fileExt = url.substr(url.lastIndexOf('.') + 1);
+            let fileExt = url.substring(url.lastIndexOf('.') + 1);              // file extention of image (.png, .webm, .webp, etc..)
+            if (tokenizerActive && (fileExt.includes('?'))) {
+                fileExt = fileExt.substring(0, fileExt.lastIndexOf('?'));       // remove '?432453' on the end of files from Tokenizer module
+            }
             if (imageFileExtentions.includes(fileExt)) {
                 const img = new Image();
                 img.addEventListener('load', function () {                          // listen to load event for image
