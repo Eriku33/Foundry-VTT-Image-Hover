@@ -3,9 +3,9 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 1.0.6
+* **Version**: 1.0.8
 * **Foundry VTT Compatibility**: 0.7.7+
-* **System Compatibility**: dnd5e and maybe others but have not checked.
+* **System Compatibility**: dnd5e and most others but have not checked.
 
 ## Installation
 To install, search for Image Hover in the module list or follow these instructions:
@@ -14,18 +14,24 @@ To install, search for Image Hover in the module list or follow these instructio
 2.  Click the Install Module button and enter the following URL:<br>https://raw.githubusercontent.com/Eriku33/Foundry-VTT-Image-Hover/main/module.json.
 
 ## Description
-A simple module that allows players to hover over actor tokens and see the character art.<br>
+A simple module that allows users to hover over actor tokens and see the character art.<br>
 User must be on the token layer to see the character art, if no character art exists (default icon), token art is used instead.
 ![image-hover-animation-example](pics/image-hover-animation-example.gif)
 
 ## Settings
-![preview](pics/image-hover-pic.PNG?raw=true)
+![preview](pics/image-hover-settings.png?raw=true)
 ### Required actor permission
 Setting for game masters to configure the required actor ownership to see character art.<br>
 Default: None - All users can hover over any token and see character art.
 ### Enable/Disable Image Hover
 Each user can disable the module.<br>
 Default: On
+### Enable/Disable Keybind requirement
+Each user can add a additional keybind requirement while hovering over a token.<br>
+Default: off
+### Keybind
+Each user can set this keybind<br>
+Default: v
 ### Position of Image
 Each user can have the character art show up at the top left or bottom right of their screen.<br>
 Default: Bottom Left
