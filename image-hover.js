@@ -21,6 +21,8 @@ let tokenizerActive = false;                                        //  Check if
 const imageFileExtentions = ["jpg", "jpeg", "png", "svg", "webp"];  // image file extentions
 const videoFileExtentions = ["mp4", "ogg", "webm", "m4v"];          // video file extentions
 
+let cacheImageNames = new Object();                                 // url file names cache
+
 /**
  * Assign module settings
  */
@@ -72,11 +74,11 @@ class ImageHoverHUD extends BasePlaceableHUD {
         const data = super.getData();
         const tokenObject = this.object;
         let image = tokenObject.actor.img                   // Character art
-	    if (image == 'icons/svg/mystery-man.svg') {         // If no character art exists, use token art instead.
+	    if (image == DEFAULT_TOKEN) {                       // If no character art exists, use token art instead.
 		    image = tokenObject.data.img;
         }
         data.url = image
-        let fileExt =image.substring(image.lastIndexOf('.') + 1);           // check file extention
+        let fileExt =image.substring(image.lastIndexOf('.') + 1).toLowerCase();           // check file extention
 
         /**
          * Tokenizer module compatibility
@@ -85,7 +87,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
             fileExt = fileExt.substring(0, fileExt.lastIndexOf('?'));       // remove '?432453' on the end of files from Tokenizer module
         }
 
-        if (imageFileExtentions.includes(fileExt)) data.isImage = true      // if the file is not a image, we want to use the video html tag
+        if (videoFileExtentions.includes(fileExt)) data.isVideo = true      // if the file is not a image, we want to use the video html tag
         return data;
     };
 
@@ -94,9 +96,6 @@ class ImageHoverHUD extends BasePlaceableHUD {
      */
     setPosition() {
         if (!this.object) return;
-        /**
-         * Here we scale our image corrosponding to the window size.
-         */
         this.updatePosition();
     };
 
@@ -104,56 +103,47 @@ class ImageHoverHUD extends BasePlaceableHUD {
      * While hovering over a token and zooming or moving screen position, we want to reposition the image and scale it.
      */
     updatePosition() {
-        const imageHover = canvas.hud.imageHover;
         const center = canvas.scene._viewPosition;                                  // Middle of the screen
         const widthScale = window.innerWidth/(imageSizeSetting*center.scale);       // Scaling to be configured
-        let url = imageHover.object.actor.img;                                      // character art
+        let url = this.object.actor.img;                                            // character art
 
-        if (url == 'icons/svg/mystery-man.svg') {      // If no character art exists, use token art instead.
-		    url = imageHover.object.data.img;
+        if (url == DEFAULT_TOKEN) {                                                 // If no character art exists, use token art instead.
+		    url = this.object.data.img;
         };
-        
-        /**
-         * Preload the image to find the width/height then rescale to find x,y positions
-         */
-        imageHover.loadSourceDimensions(url).then(({width, height}) => {
-            const yAxis = imageHover.changePosition(width, height, widthScale, center);   // move image to correct verticle position.
-            const xAxis = center.x - (window.innerWidth/(2*center.scale));                // move image to left of screen
-            const position = {                                                  // CSS
-                width: widthScale,
-                left: xAxis,
-                top: yAxis,
-            };
-            imageHover.element.css(position);                                   // Apply CSS to element
-        })
+
+        if (cacheImageNames[url] === undefined) { // This only happens when you change a image on the canvas or drag a token onto canvas.
+            this.cacheAvailableToken(url,widthScale,center)
+        } else {
+            this.applyToCanvas(url, widthScale, center)
+        }
     };
 
     /**
-     * Returns the dimensions of a image/video asynchrounsly.
+     * Preload the url to find the width/height.
      * @param {String} url Url of the image/video to get dimensions from.
      * @return {Promise} Promise which returns the dimensions of the image/video in 'width' and 'height' properties.
      */
-    loadSourceDimensions(url) {
+    async loadSourceDimensions(url) {
         return new Promise(resolve => {
-            let fileExt = url.substring(url.lastIndexOf('.') + 1);              // file extention of image (.png, .webm, .webp, etc..)
+            let fileExt = url.substring(url.lastIndexOf('.') + 1).toLowerCase();// file extention of image (.png, .webm, .webp, etc..)
             if (tokenizerActive && (fileExt.includes('?'))) {
                 fileExt = fileExt.substring(0, fileExt.lastIndexOf('?'));       // remove '?432453' on the end of files from Tokenizer module
             }
             if (imageFileExtentions.includes(fileExt)) {
                 const img = new Image();
-                img.addEventListener('load', function () {                          // listen to load event for image
+                img.addEventListener('load', function () {                      // listen to load event for image
                     resolve({                   
-                        width : this.width,                                // send back result
+                        width : this.width,                                     // send back result
                         height : this.height
                     });
                 });
                 img.src = url;
 
             } else {
-                const video = document.createElement('video');                    // create the video element
+                const video = document.createElement('video');                  // create the video element
                 video.addEventListener( "loadedmetadata", function () {         // place a listener on it
                     resolve({        
-                        width : this.videoWidth,                                           // send back result
+                        width : this.videoWidth,                                // send back result
                         height : this.videoHeight
                     });
                 });
@@ -162,13 +152,50 @@ class ImageHoverHUD extends BasePlaceableHUD {
         });
     };
 
+    /** 
+     * Add image to cache and show on canvas
+     * @param {String} url Url of the image/video to get dimensions from.
+     * @param {Number} widthScale width of image related to screen size (pixels)
+     * @param {Number} center Middle of the screen with scaling (pixels)
+     */
+    cacheAvailableToken(url, widthScale, center) {
+        canvas.hud.imageHover.loadSourceDimensions(url).then(({width, height}) => {
+            cacheImageNames[url] = {
+                'width': width,
+                'height': height
+            }
+            if (widthScale && center) {
+                this.applyToCanvas(url, widthScale, center)
+            }
+        })
+    }
+
+
     /**
-     * 
+     * Rescale image to fit screen size, apply css
+     * @param {String} url Url of the image/video to get dimensions from.
+     * @param {Number} widthScale width of image related to screen size (pixels)
+     * @param {Number} center Middle of the screen with scaling (pixels)
+     */
+    applyToCanvas(url, widthScale, center) {
+        const width = cacheImageNames[url].width                                //width of original image
+        const height = cacheImageNames[url].height                              //height of original image
+        const yAxis = this.changePosition(width, height, widthScale, center);   // move image to correct verticle position.
+        const xAxis = center.x - (window.innerWidth/(2*center.scale));          // move image to left of screen
+        const position = {                                                      // CSS
+            width: widthScale,
+            left: xAxis,
+            top: yAxis,
+        };
+        this.element.css(position);                                             // Apply CSS to element
+    }
+
+    /**
+     * Rescale original image and move to correct location within the canvas
      * @param {Number} width width or original image (pixles)
      * @param {Number} height height of original image (pixels)
      * @param {Number} widthScale width of image related to screen size (pixels)
      * @param {Number} center Middle of the screen with scaling (pixels)
-     * Rescale original image and move to correct location within the canvas
      */
     changePosition(width, height, widthScale, center) {
         const widthPixels = width/widthScale;
@@ -196,9 +223,9 @@ class ImageHoverHUD extends BasePlaceableHUD {
         }
         
         if (hovered && canvas.activeLayer.name == 'TokenLayer') {       // Show token image if hovered, otherwise don't
-            canvas.hud.imageHover.bind(token);
+            this.bind(token);
         } else {
-            canvas.hud.imageHover.clear();
+            this.clear();
         };
     }
 };
@@ -212,6 +239,14 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
     html[0].style.zIndex = 70;                                      // Sets image to show above other UI. This is definately a hack!
     html.append(`<template id="image-hover-hud"></template>`);
     canvas.hud.imageHover = new ImageHoverHUD();
+
+    /**
+     * renderHeadsUpDisplay is called when changing scene, use this to cache tokens on screen.
+     */
+    for (const token of canvas.tokens.placeables){
+        canvas.hud.imageHover.cacheAvailableToken(token.actor.img, false, false)
+        canvas.hud.imageHover.cacheAvailableToken(token.data.img, false, false)
+    }
 });
 
 /**
@@ -234,6 +269,13 @@ Hooks.on('hoverToken', (token, hovered) => {
  * Remove character art when dragging token (Hover hook doesn't trigger while token movement animation is on).
  */
 Hooks.on("preUpdateToken", (...args) => {
+    canvas.hud.imageHover.clear();       
+});
+
+/**
+ * Remove character art when deleting a token.
+ */
+Hooks.on("deleteToken", (...args) => {
     canvas.hud.imageHover.clear();       
 });
 
