@@ -266,18 +266,17 @@ Hooks.on('hoverToken', (token, hovered) => {
 
 
 /**
- * Remove character art when dragging token (Hover hook doesn't trigger while token movement animation is on).
+ * Remove character art when deleting/dragging token (Hover hook doesn't trigger while token movement animation is on).
  */
-Hooks.on("preUpdateToken", (...args) => {
-    canvas.hud.imageHover.clear();       
-});
+Hooks.on("preUpdateToken", (...args) => canvas.hud.imageHover.clear());
+Hooks.on("deleteToken", (...args) => canvas.hud.imageHover.clear());
 
 /**
- * Remove character art when deleting a token.
+ * Occasions to remove character art from screen due to weird hover hook interaction.
  */
-Hooks.on("deleteToken", (...args) => {
-    canvas.hud.imageHover.clear();       
-});
+Hooks.on("closeActorSheet", (...args) => canvas.hud.imageHover.clear());
+Hooks.on("closeSettingsConfig", (...args) => canvas.hud.imageHover.clear());
+Hooks.on("closeApplication", (...args) => canvas.hud.imageHover.clear());
 
 /**
  * When user scrolls/moves the screen position, we want to relocate the image.
@@ -311,3 +310,5 @@ document.addEventListener('keydown', event => {
         }
     }
 });
+
+// TODO Remove alt thing on hover.
