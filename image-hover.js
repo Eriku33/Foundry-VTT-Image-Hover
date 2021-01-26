@@ -111,10 +111,10 @@ class ImageHoverHUD extends BasePlaceableHUD {
 		    url = this.object.data.img;
         };
 
-        if (cacheImageNames[url] === undefined) { // This only happens when you change a image on the canvas or drag a token onto canvas.
-            this.cacheAvailableToken(url,widthScale,center)
-        } else {
+        if (url in cacheImageNames) {
             this.applyToCanvas(url, widthScale, center)
+        } else {                                                                    // This only happens when you change a image on the canvas.
+            this.cacheAvailableToken(url, widthScale,center)
         }
     };
 
@@ -123,23 +123,13 @@ class ImageHoverHUD extends BasePlaceableHUD {
      * @param {String} url Url of the image/video to get dimensions from.
      * @return {Promise} Promise which returns the dimensions of the image/video in 'width' and 'height' properties.
      */
-    async loadSourceDimensions(url) {
+    loadSourceDimensions(url) {
         return new Promise(resolve => {
             let fileExt = url.substring(url.lastIndexOf('.') + 1).toLowerCase();// file extention of image (.png, .webm, .webp, etc..)
             if (tokenizerActive && (fileExt.includes('?'))) {
                 fileExt = fileExt.substring(0, fileExt.lastIndexOf('?'));       // remove '?432453' on the end of files from Tokenizer module
             }
-            if (imageFileExtentions.includes(fileExt)) {
-                const img = new Image();
-                img.addEventListener('load', function () {                      // listen to load event for image
-                    resolve({                   
-                        width : this.width,                                     // send back result
-                        height : this.height
-                    });
-                });
-                img.src = url;
-
-            } else {
+            if (videoFileExtentions.includes(fileExt)) {
                 const video = document.createElement('video');                  // create the video element
                 video.addEventListener( "loadedmetadata", function () {         // place a listener on it
                     resolve({        
@@ -148,6 +138,16 @@ class ImageHoverHUD extends BasePlaceableHUD {
                     });
                 });
                 video.src = url;                                                // start download meta-data
+
+            } else {
+                const img = new Image();
+                img.addEventListener('load', function () {                      // listen to load event for image
+                    resolve({                   
+                        width : this.width,                                     // send back result
+                        height : this.height
+                    });
+                });
+                img.src = url;
             };
         });
     };
@@ -243,9 +243,24 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
     /**
      * renderHeadsUpDisplay is called when changing scene, use this to cache tokens on screen.
      */
+    canvas.hud.imageHover.cacheAvailableToken(DEFAULT_TOKEN, false, false)
     for (const token of canvas.tokens.placeables){
-        canvas.hud.imageHover.cacheAvailableToken(token.actor.img, false, false)
-        canvas.hud.imageHover.cacheAvailableToken(token.data.img, false, false)
+        if (!(token.actor.img in cacheImageNames)) {
+            canvas.hud.imageHover.cacheAvailableToken(token.actor.img, false, false)
+        } else if (token.actor.img === DEFAULT_TOKEN) {
+            canvas.hud.imageHover.cacheAvailableToken(token.data.img, false, false)
+        }
+    }
+});
+
+Hooks.on("createToken", (scene, data) => {
+    const tokenId = game.actors.get(data.actorId);
+    let imageToCache = tokenId.img;
+    if (imageToCache === DEFAULT_TOKEN) {
+        imageToCache = data.img;
+    };
+    if (!(imageToCache in cacheImageNames)) {
+        canvas.hud.imageHover.cacheAvailableToken(imageToCache, false, false)
     }
 });
 
