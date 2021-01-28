@@ -1,0 +1,14 @@
+{
+    "name": "image-hover",
+    "title": "Image Hover",
+    "description": "This module allows users to see the character art while hovering over a token.",
+    "version": "1.1.0",
+    "minimumCoreVersion": "0.7.7",
+    "compatibleCoreVersion": "0.7.9",
+    "author": "Eriku#2108",
+    "esmodules": ["image-hover.js"]
+    "scripts": ["lib/settings-extender/src_settings-extender"]
+    "url": "https://github.com/Eriku33/Foundry-VTT-Image-Hover",
+    "manifest": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/latest/download/module.json",
+    "download": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/1.1.0/module.zip"
+}
