@@ -255,10 +255,13 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
 
 Hooks.on("createToken", (scene, data) => {
     const tokenId = game.actors.get(data.actorId);
+    
+    if (!tokenId) return;
+
     let imageToCache = tokenId.img;
     if (imageToCache === DEFAULT_TOKEN) {
         imageToCache = data.img;
-    };
+    }
     if (!(imageToCache in cacheImageNames)) {
         canvas.hud.imageHover.cacheAvailableToken(imageToCache, false, false)
     }
