@@ -320,12 +320,19 @@ Hooks.on("closeSettingsConfig", function() {
 /**
  * add event listener when keybind setting is activated
  */
+var handledEvent = false;
 document.addEventListener('keydown', event => {
-	if (keybindActive && window.Azzu.SettingsTypes.KeyBinding.eventIsForBinding(event, keybindKeySet)) {
+	if (keybindActive && window.Azzu.SettingsTypes.KeyBinding.eventIsForBinding(event, keybindKeySet) && !handledEvent) {
+        handledEvent = true;
         const hoveredToken = canvas.tokens._hover
         if (hoveredToken !== null) {
             canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true);
         }
+    }
+});
+document.addEventListener('keyup', event => {
+	if (keybindActive && window.Azzu.SettingsTypes.KeyBinding.eventIsForBinding(event, keybindKeySet) && handledEvent) {
+        handledEvent = false;
     }
 });
 
