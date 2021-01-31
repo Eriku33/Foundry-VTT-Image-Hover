@@ -55,10 +55,12 @@ export class Settings {
             scope: "client",          // Client-stored setting
             config: true,             // Show setting in configuration view
             choices: {                // Choices
-                "Top": "Top Left",
-                "Bottom": "Bottom Left"
+                "Bottom left": "Bottom left",
+                "Bottom right": "Bottom right",
+                "Top left": "Top left",
+                "Top right": "Top right"
             },
-            default: "Bottom",        // Default Value
+            default: "Bottom left",   // Default Value
             type: String              // Value type
         });
 

@@ -7,7 +7,7 @@ let actorRequirementSetting = "None";                               // required 
 let imageHoverActive = true;                                        // Enable/Disable module
 let keybindActive = false;                                          // Enable/Disable keybind requirement while hovering
 let keybindKeySet = 'v'                                             // configurable keybind
-let imagePositionSetting = "Bottom";                                // location of character art
+let imagePositionSetting = "Bottom left";                                // location of character art
 let imageSizeSetting = 7;                                           // size of character art
 
 /**
@@ -104,7 +104,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
      */
     updatePosition() {
         const center = canvas.scene._viewPosition;                                  // Middle of the screen
-        const widthScale = window.innerWidth/(imageSizeSetting*center.scale);       // Scaling to be configured
+        const imageWidthScaled = window.innerWidth/(imageSizeSetting*center.scale); // Scaled width of image to canvas
         let url = this.object.actor.img;                                            // character art
 
         if (url == DEFAULT_TOKEN) {                                                 // If no character art exists, use token art instead.
@@ -112,14 +112,14 @@ class ImageHoverHUD extends BasePlaceableHUD {
         };
 
         if (url in cacheImageNames) {
-            this.applyToCanvas(url, widthScale, center)
+            this.applyToCanvas(url, imageWidthScaled, center)
         } else {                                                                    // This only happens when you change a image on the canvas.
-            this.cacheAvailableToken(url, widthScale,center)
+            this.cacheAvailableToken(url, imageWidthScaled,center)
         }
     };
 
     /**
-     * Preload the url to find the width/height.
+     * Preload the url to find the width and height.
      * @param {String} url Url of the image/video to get dimensions from.
      * @return {Promise} Promise which returns the dimensions of the image/video in 'width' and 'height' properties.
      */
@@ -155,35 +155,33 @@ class ImageHoverHUD extends BasePlaceableHUD {
     /** 
      * Add image to cache and show on canvas
      * @param {String} url Url of the image/video to get dimensions from.
-     * @param {Number} widthScale width of image related to screen size (pixels)
+     * @param {Number} imageWidthScaled width of image related to screen size (pixels)
      * @param {Number} center Middle of the screen with scaling (pixels)
      */
-    cacheAvailableToken(url, widthScale, center) {
+    cacheAvailableToken(url, imageWidthScaled, center) {
         canvas.hud.imageHover.loadSourceDimensions(url).then(({width, height}) => {
             cacheImageNames[url] = {
                 'width': width,
                 'height': height
             }
-            if (widthScale && center) {
-                this.applyToCanvas(url, widthScale, center)
+            if (imageWidthScaled && center) {
+                this.applyToCanvas(url, imageWidthScaled, center)
             }
         })
     }
 
-
     /**
      * Rescale image to fit screen size, apply css
      * @param {String} url Url of the image/video to get dimensions from.
-     * @param {Number} widthScale width of image related to screen size (pixels)
+     * @param {Number} imageWidthScaled width of image related to screen size (pixels)
      * @param {Number} center Middle of the screen with scaling (pixels)
      */
-    applyToCanvas(url, widthScale, center) {
-        const width = cacheImageNames[url].width                                //width of original image
-        const height = cacheImageNames[url].height                              //height of original image
-        const yAxis = this.changePosition(width, height, widthScale, center);   // move image to correct verticle position.
-        const xAxis = center.x - (window.innerWidth/(2*center.scale));          // move image to left of screen
+    applyToCanvas(url, imageWidthScaled, center) {
+        const imageWidth = cacheImageNames[url].width;                                //width of original image
+        const imageHeight = cacheImageNames[url].height;                              //height of original image
+        const [xAxis, yAxis] = this.changePosition(imageWidth, imageHeight, imageWidthScaled, center);   // move image to correct verticle position.
         const position = {                                                      // CSS
-            width: widthScale,
+            width: imageWidthScaled,
             left: xAxis,
             top: yAxis,
         };
@@ -192,21 +190,39 @@ class ImageHoverHUD extends BasePlaceableHUD {
 
     /**
      * Rescale original image and move to correct location within the canvas
-     * @param {Number} width width or original image (pixles)
-     * @param {Number} height height of original image (pixels)
-     * @param {Number} widthScale width of image related to screen size (pixels)
+     * @param {Number} imageWidth width of original image (pixles)
+     * @param {Number} imageHeight height of original image (pixels)
+     * @param {Number} imageWidthScaled width of image related to screen size (pixels)
      * @param {Number} center Middle of the screen with scaling (pixels)
      */
-    changePosition(width, height, widthScale, center) {
-        const widthPixels = width/widthScale;
-        const heightPixels = height/widthPixels;
-        if (imagePositionSetting === 'Bottom'){                                     // move image to bottom of screen
-            var yAxis = center.y - heightPixels + (window.innerHeight/(2*center.scale));
+    changePosition(imageWidth, imageHeight, imageWidthScaled, center) {
+        const imageWidthRatio = imageWidth/imageWidthScaled;
+        const imageHeightScaled = imageHeight/imageWidthRatio;
+        const windowWidthScaled = window.innerWidth/(center.scale);
+        const windowHeightScaled = window.innerHeight/(center.scale);
+        let xAxis = 0;
+        let yAxis = 0;
+
+        if (imagePositionSetting.includes('Bottom')){                           // move image to bottom of canvas
+            yAxis = center.y + windowHeightScaled/2  - imageHeightScaled;   
         }
         else {
-            var yAxis = center.y - (window.innerHeight/(2*center.scale));
+            yAxis = center.y - windowHeightScaled/2;
         };
-        return yAxis;
+
+        if (imagePositionSetting.includes('right')){                            // move image to right of canvas
+            const sidebar = document.getElementById('sidebar');
+            const sidebarCollapsed = sidebar.classList.contains("collapsed");
+            if (imagePositionSetting.includes('Bottom') && sidebarCollapsed) {
+                xAxis = center.x + windowWidthScaled/2 - imageWidthScaled;      // take into account if sidebar is collapsed
+            } else {
+                const sidebarWidthScaled = sidebar.offsetWidth/center.scale;
+                xAxis = center.x + windowWidthScaled/2 - imageWidthScaled - sidebarWidthScaled;
+            }
+        } else {
+            xAxis = center.x - windowWidthScaled/2
+        }
+        return [xAxis, yAxis];
     };
 
     /**
@@ -241,10 +257,11 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
     canvas.hud.imageHover = new ImageHoverHUD();
 
     /**
-     * renderHeadsUpDisplay is called when changing scene, use this to cache tokens on screen.
+     * renderHeadsUpDisplay is called when changing scene, use this to cache token images on the scene.
      */
     canvas.hud.imageHover.cacheAvailableToken(DEFAULT_TOKEN, false, false)
     for (const token of canvas.tokens.placeables){
+        if (!token || !token.actor) return;
         if (!(token.actor.img in cacheImageNames)) {
             canvas.hud.imageHover.cacheAvailableToken(token.actor.img, false, false)
         } else if (token.actor.img === DEFAULT_TOKEN) {
@@ -253,8 +270,12 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
     }
 });
 
+/**
+ * Cache token image upon creating a actor.
+ */
 Hooks.on("createToken", (scene, data) => {
     const tokenId = game.actors.get(data.actorId);
+    if (!tokenId) return;
     let imageToCache = tokenId.img;
     if (imageToCache === DEFAULT_TOKEN) {
         imageToCache = data.img;
