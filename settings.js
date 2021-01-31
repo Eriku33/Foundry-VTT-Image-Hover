@@ -51,7 +51,7 @@ export class Settings {
         // client setting
         game.settings.register("image-hover", "userImagePosition", {
             name: "Position of image",                                                                    // Setting name
-            hint: "Set the image position to the top left or bottom left of the screen (per user).",      // Setting description
+            hint: "Set the location of the image on the screen (per user).",      // Setting description
             scope: "client",          // Client-stored setting
             config: true,             // Show setting in configuration view
             choices: {                // Choices
