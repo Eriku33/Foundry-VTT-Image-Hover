@@ -292,11 +292,11 @@ Hooks.on("createToken", (scene, data) => {
  * @param {Boolean} hovered if token is mouseovered
  */
 Hooks.on('hoverToken', (token, hovered) => {
-    if (!hovered) {
+    if (!hovered || (event && event.altKey)) {	// alt key in Foundry auto hovers all tokens in Foundry
         canvas.hud.imageHover.clear();
         return;
     }
-    if (keybindActive === false && !event.altKey) {              // alt key in Foundry auto hovers all tokens in Foundry
+    if (keybindActive === false) {
         canvas.hud.imageHover.showArtworkRequirements(token, hovered)
     }
 });
