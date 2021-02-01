@@ -296,7 +296,7 @@ Hooks.on('hoverToken', (token, hovered) => {
         canvas.hud.imageHover.clear();
         return;
     }
-    if (keybindActive === false && !window.event.altKey) {              // alt key in Foundry auto hovers all tokens in Foundry
+    if (keybindActive === false && !event.altKey) {              // alt key in Foundry auto hovers all tokens in Foundry
         canvas.hud.imageHover.showArtworkRequirements(token, hovered)
     }
 });
