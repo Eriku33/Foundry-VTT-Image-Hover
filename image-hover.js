@@ -292,11 +292,12 @@ Hooks.on("createToken", (scene, data) => {
  * @param {Boolean} hovered if token is mouseovered
  */
 Hooks.on('hoverToken', (token, hovered) => {
-    if (keybindActive === false) {
-        canvas.hud.imageHover.showArtworkRequirements(token, hovered)
-    }
     if (!hovered) {
         canvas.hud.imageHover.clear();
+        return;
+    }
+    if (keybindActive === false && !window.event.altKey) {              // alt key in Foundry auto hovers all tokens in Foundry
+        canvas.hud.imageHover.showArtworkRequirements(token, hovered)
     }
 });
 
@@ -346,5 +347,3 @@ document.addEventListener('keydown', event => {
         }
     }
 });
-
-// TODO Remove alt thing on hover.
