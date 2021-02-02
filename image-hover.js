@@ -7,13 +7,8 @@ let actorRequirementSetting = "None";                               // required 
 let imageHoverActive = true;                                        // Enable/Disable module
 let keybindActive = false;                                          // Enable/Disable keybind requirement while hovering
 let keybindKeySet = 'v'                                             // configurable keybind
-let imagePositionSetting = "Bottom left";                                // location of character art
+let imagePositionSetting = "Bottom left";                           // location of character art
 let imageSizeSetting = 7;                                           // size of character art
-
-/**
- * Tokenizer module compatibility
- */
-let tokenizerActive = false;                                        //  Check if Tokenizer Module active for compatibility. (Undefined if module not installed)
 
 /**
  * Supported Foundry VTT file types
@@ -33,7 +28,6 @@ function registerModuleSettings() {
     keybindKeySet = assignKeybind(game.settings.get('image-hover', 'userKeybindButton'));
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
-    tokenizerActive = game.modules.get("vtta-tokenizer")?.active                // Undefined if module not installed)
 };
 
 /**
@@ -78,18 +72,22 @@ class ImageHoverHUD extends BasePlaceableHUD {
 		    image = tokenObject.data.img;
         }
         data.url = image
-        let fileExt =image.substring(image.lastIndexOf('.') + 1).toLowerCase();           // check file extention
-
-        /**
-         * Tokenizer module compatibility
-         */
-        if (tokenizerActive && (fileExt.includes('?'))) {
-            fileExt = fileExt.substring(0, fileExt.lastIndexOf('?'));       // remove '?432453' on the end of files from Tokenizer module
-        }
-
+        const fileExt = this.fileExtention(image)
         if (videoFileExtentions.includes(fileExt)) data.isVideo = true      // if the file is not a image, we want to use the video html tag
         return data;
     };
+
+    /**
+     * Attempts to get the file extention of the string input
+     * @param {String} file file path in folder
+     */
+    fileExtention(file) {
+        let fileExt = "png";                                              // Assume art is a image by default
+        const endOfFile = file.lastIndexOf('.') + 1;
+        if (endOfFile !== undefined) fileExt = file.substring(endOfFile).toLowerCase();
+    
+        return fileExt
+    }
 
     /**
      * Set handout position, this uses the client screen position and zoom level to scale the image.
@@ -125,10 +123,9 @@ class ImageHoverHUD extends BasePlaceableHUD {
      */
     loadSourceDimensions(url) {
         return new Promise(resolve => {
-            let fileExt = url.substring(url.lastIndexOf('.') + 1).toLowerCase();// file extention of image (.png, .webm, .webp, etc..)
-            if (tokenizerActive && (fileExt.includes('?'))) {
-                fileExt = fileExt.substring(0, fileExt.lastIndexOf('?'));       // remove '?432453' on the end of files from Tokenizer module
-            }
+
+            const fileExt = this.fileExtention(url)
+
             if (videoFileExtentions.includes(fileExt)) {
                 const video = document.createElement('video');                  // create the video element
                 video.addEventListener( "loadedmetadata", function () {         // place a listener on it
@@ -189,7 +186,8 @@ class ImageHoverHUD extends BasePlaceableHUD {
     }
 
     /**
-     * Rescale original image and move to correct location within the canvas
+     * Rescale original image and move to correct location within the canvas.
+     * imagePositionSetting options include Bottom right/left and Top right/left
      * @param {Number} imageWidth width of original image (pixles)
      * @param {Number} imageHeight height of original image (pixels)
      * @param {Number} imageWidthScaled width of image related to screen size (pixels)
@@ -276,11 +274,12 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
 Hooks.on("createToken", (scene, data) => {
     const tokenId = game.actors.get(data.actorId);
     if (!tokenId) return;
+
     let imageToCache = tokenId.img;
     if (imageToCache === DEFAULT_TOKEN) {
         imageToCache = data.img;
     };
-    if (!(imageToCache in cacheImageNames)) {
+    if (imageToCache && !(imageToCache in cacheImageNames)) {
         canvas.hud.imageHover.cacheAvailableToken(imageToCache, false, false)
     }
 });
@@ -296,11 +295,11 @@ Hooks.on('hoverToken', (token, hovered) => {
         canvas.hud.imageHover.clear();
         return;
     }
+    
     if (keybindActive === false) {
         canvas.hud.imageHover.showArtworkRequirements(token, hovered)
     }
 });
-
 
 /**
  * Remove character art when deleting/dragging token (Hover hook doesn't trigger while token movement animation is on).
