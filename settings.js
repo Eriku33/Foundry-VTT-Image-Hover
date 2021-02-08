@@ -17,6 +17,22 @@ export class Settings {
             type: Number            // Value type
         });
 
+        // Game master setting
+        game.settings.register("image-hover", "artType", {
+            name: "Art on hover",                              // Setting name
+            hint: "The type of art shown on hover",     // Setting description
+            scope: "world",         // Global setting
+            config: true,           // Show setting in configuration view
+            restricted: true,       // Game master only   
+            choices: {              // Choices
+                    "character": "Character art",
+                    "token": "Token art",
+                    "wildcard": "Token art if wildcard"
+            },
+            default: "character",   // Default value
+            type: String            // Value type
+        });
+
         // client setting
         game.settings.register("image-hover", "userEnableModule", {
             name: "Enable/Disable Image Hover",                               // Setting name

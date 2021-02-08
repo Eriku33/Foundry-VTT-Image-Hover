@@ -9,6 +9,7 @@ let keybindActive = false;                                          // Enable/Di
 let keybindKeySet = 'v'                                             // configurable keybind
 let imagePositionSetting = "Bottom left";                           // location of character art
 let imageSizeSetting = 7;                                           // size of character art
+let imageHoverArt = "character"                                     // Art type on hover (Character art or Token art)
 
 /**
  * Supported Foundry VTT file types
@@ -28,6 +29,7 @@ function registerModuleSettings() {
     keybindKeySet = assignKeybind(game.settings.get('image-hover', 'userKeybindButton'));
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
+    imageHoverArt = game.settings.get('image-hover', 'artType');
 };
 
 /**
@@ -68,7 +70,8 @@ class ImageHoverHUD extends BasePlaceableHUD {
         const data = super.getData();
         const tokenObject = this.object;
         let image = tokenObject.actor.img                   // Character art
-	    if (image == DEFAULT_TOKEN) {                       // If no character art exists, use token art instead.
+        const isWildcard = tokenObject.actor.data.token.randomImg;
+	    if (image == DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard)) {                       // If no character art exists, use token art instead.
 		    image = tokenObject.data.img;
         }
         data.url = image
@@ -104,8 +107,8 @@ class ImageHoverHUD extends BasePlaceableHUD {
         const center = canvas.scene._viewPosition;                                  // Middle of the screen
         const imageWidthScaled = window.innerWidth/(imageSizeSetting*center.scale); // Scaled width of image to canvas
         let url = this.object.actor.img;                                            // character art
-
-        if (url == DEFAULT_TOKEN) {                                                 // If no character art exists, use token art instead.
+        const isWildcard = this.object.actor.data.token.randomImg;
+        if (url == DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard)) {                                                 // If no character art exists, use token art instead.
 		    url = this.object.data.img;
         };
 
