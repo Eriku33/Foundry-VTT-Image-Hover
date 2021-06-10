@@ -4,10 +4,10 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 1.1.2
+* **Version**: 1.1.8
 * **Foundry VTT Compatibility**: 0.7.7+
 * **System Compatibility**: dnd5e and most others but have not checked.
-
+* **Dependencies**: keybind lib module(https://foundryvtt.com/packages/keybind-lib)
 ## Installation
 To install, search for Image Hover in the module list or follow these instructions:
 
@@ -32,7 +32,7 @@ Each user can add a additional keybind requirement while hovering over a token.<
 Default: off
 ### Keybind
 Each user can set this keybind<br>
-Default: v
+Default: KeyV
 ### Position of Image
 Each user can relocate the cahracter art to a different corner of the screen (Bottom left/right and Top left/right)<br>
 Default: Bottom Left
