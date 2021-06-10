@@ -6,10 +6,11 @@ import { Settings } from './settings.js';
 let actorRequirementSetting = "None";                               // required actor premission to see character art
 let imageHoverActive = true;                                        // Enable/Disable module
 let keybindActive = false;                                          // Enable/Disable keybind requirement while hovering
-let keybindKeySet = 'v'                                             // configurable keybind
+let keybindKeySet = 'KeyV'                                          // configurable keybind
 let imagePositionSetting = "Bottom left";                           // location of character art
 let imageSizeSetting = 7;                                           // size of character art
-let imageHoverArt = "character"                                     // Art type on hover (Character art or Token art)
+let imageHoverArt = "character";                                    // Art type on hover (Character art or Token art)
+let DEFAULT_TOKEN = "icons/svg/mystery-man.svg";                    // default token for foundry vtt
 
 /**
  * Supported Foundry VTT file types
@@ -26,24 +27,11 @@ function registerModuleSettings() {
     actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');
     imageHoverActive = game.settings.get('image-hover', 'userEnableModule');
     keybindActive = game.settings.get('image-hover', 'userEnableKeybind');
-    keybindKeySet = assignKeybind(game.settings.get('image-hover', 'userKeybindButton'));
+    keybindKeySet = game.settings.get( 'image-hover', 'userKeybindButton');
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
     imageHoverArt = game.settings.get('image-hover', 'artType');
 };
-
-/**
- * @param {String} key Keybind set by user
- */
-function assignKeybind(key) {
-    /**
-     * keybinds ending with space are trimmed by 0.7.x settings window
-     */
-    if (key.endsWith("+")) {
-        key = key + "  ";
-      }
-    return window.Azzu.SettingsTypes.KeyBinding.parse(key)
-}
 
 /**
  * Copy Placeable HUD template
@@ -321,7 +309,10 @@ Hooks.on("closeApplication", (...args) => canvas.hud.imageHover.clear());
  * When user scrolls/moves the screen position, we want to relocate the image.
  */
 Hooks.on("canvasPan", (...args) => {
-    if (typeof canvas.hud.imageHover !== 'undefined' && (canvas.hud.imageHover.object !== null)) {
+    if (typeof canvas.hud.imageHover !== 'undefined') {
+        if (typeof canvas.hud.imageHover.object === 'undefined' || canvas.hud.imageHover.object === null ) {
+            return;
+        }
         canvas.hud.imageHover.updatePosition();
     };
 });
@@ -342,7 +333,7 @@ Hooks.on("closeSettingsConfig", function() {
  * add event listener when keybind setting is activated
  */
 document.addEventListener('keydown', event => {
-	if (keybindActive && window.Azzu.SettingsTypes.KeyBinding.eventIsForBinding(event, keybindKeySet)) {
+	if (keybindActive && KeybindLib.isBoundTo(event, 'image-hover', 'userKeybindButton')) {
         const hoveredToken = canvas.tokens._hover
         if (hoveredToken !== null) {
             canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true);

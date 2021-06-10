@@ -55,14 +55,23 @@ export class Settings {
         });
 
         // client setting
-        game.settings.register("image-hover", "userKeybindButton", {
+        //game.settings.register("image-hover", "userKeybindButton", {
+        //    name: "Keybind",                                    // Setting name
+        //    hint: "Assign the additional keybind requirement to show a image while hovering a token (per user).",     // Setting description
+        //    type: window.Azzu.SettingsTypes.KeyBinding,
+        //    scope: "client",        // Client-stored setting
+        //    config: true,           // Show setting in configuration view
+        //    default: 'v',           // Default Value
+        //});
+
+        KeybindLib.register("image-hover", "userKeybindButton", {
             name: "Keybind",                                    // Setting name
             hint: "Assign the additional keybind requirement to show a image while hovering a token (per user).",     // Setting description
-            type: window.Azzu.SettingsTypes.KeyBinding,
             scope: "client",        // Client-stored setting
-            config: true,           // Show setting in configuration view
-            default: 'v',           // Default Value
+            default: "KeyV",
+            config: true,
         });
+        
 
         // client setting
         game.settings.register("image-hover", "userImagePosition", {
