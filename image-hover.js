@@ -1,12 +1,10 @@
-import { Settings } from './settings.js';
+import {Settings} from './settings.js';
 
 /**
  * Default settings
  */
 let actorRequirementSetting = "None";                               // required actor premission to see character art
 let imageHoverActive = true;                                        // Enable/Disable module
-let keybindActive = false;                                          // Enable/Disable keybind requirement while hovering
-let keybindKeySet = 'KeyV'                                          // configurable keybind
 let imagePositionSetting = "Bottom left";                           // location of character art
 let imageSizeSetting = 7;                                           // size of character art
 let imageHoverArt = "character";                                    // Art type on hover (Character art or Token art)
@@ -18,7 +16,7 @@ let DEFAULT_TOKEN = "icons/svg/mystery-man.svg";                    // default t
 const imageFileExtentions = ["jpg", "jpeg", "png", "svg", "webp"];  // image file extentions
 const videoFileExtentions = ["mp4", "ogg", "webm", "m4v"];          // video file extentions
 
-let cacheImageNames = new Object();                                 // url file names cache
+let cacheImageNames = {};                                 // url file names cache
 
 /**
  * Assign module settings
@@ -26,12 +24,10 @@ let cacheImageNames = new Object();                                 // url file 
 function registerModuleSettings() {
     actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');
     imageHoverActive = game.settings.get('image-hover', 'userEnableModule');
-    keybindActive = game.settings.get('image-hover', 'userEnableKeybind');
-    keybindKeySet = game.settings.get( 'image-hover', 'userKeybindButton');
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
     imageHoverArt = game.settings.get('image-hover', 'artType');
-};
+}
 
 /**
  * Copy Placeable HUD template
@@ -59,7 +55,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
         const tokenObject = this.object;
         let image = tokenObject.actor.img                   // Character art
         const isWildcard = tokenObject.actor.data.token.randomImg;
-	    if (image == DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard)) {                       // If no character art exists, use token art instead.
+	    if (image === DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard)) {                       // If no character art exists, use token art instead.
 		    image = tokenObject.data.img;
         }
         data.url = image
@@ -76,7 +72,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
         let fileExt = "png";                                              // Assume art is a image by default
         const endOfFile = file.lastIndexOf('.') + 1;
         if (endOfFile !== undefined) fileExt = file.substring(endOfFile).toLowerCase();
-    
+
         return fileExt
     }
 
@@ -96,9 +92,9 @@ class ImageHoverHUD extends BasePlaceableHUD {
         const imageWidthScaled = window.innerWidth/(imageSizeSetting*center.scale); // Scaled width of image to canvas
         let url = this.object.actor.img;                                            // character art
         const isWildcard = this.object.actor.data.token.randomImg;
-        if (url == DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard)) {                                                 // If no character art exists, use token art instead.
+        if (url === DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard)) {                                                 // If no character art exists, use token art instead.
 		    url = this.object.data.img;
-        };
+        }
 
         if (url in cacheImageNames) {
             this.applyToCanvas(url, imageWidthScaled, center)
@@ -120,7 +116,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
             if (videoFileExtentions.includes(fileExt)) {
                 const video = document.createElement('video');                  // create the video element
                 video.addEventListener( "loadedmetadata", function () {         // place a listener on it
-                    resolve({        
+                    resolve({
                         width : this.videoWidth,                                // send back result
                         height : this.videoHeight
                     });
@@ -130,17 +126,17 @@ class ImageHoverHUD extends BasePlaceableHUD {
             } else {
                 const img = new Image();
                 img.addEventListener('load', function () {                      // listen to load event for image
-                    resolve({                   
+                    resolve({
                         width : this.width,                                     // send back result
                         height : this.height
                     });
                 });
                 img.src = url;
-            };
+            }
         });
     };
 
-    /** 
+    /**
      * Add image to cache and show on canvas
      * @param {String} url Url of the image/video to get dimensions from.
      * @param {Number} imageWidthScaled width of image related to screen size (pixels)
@@ -193,11 +189,11 @@ class ImageHoverHUD extends BasePlaceableHUD {
         let yAxis = 0;
 
         if (imagePositionSetting.includes('Bottom')){                           // move image to bottom of canvas
-            yAxis = center.y + windowHeightScaled/2  - imageHeightScaled;   
+            yAxis = center.y + windowHeightScaled/2  - imageHeightScaled;
         }
         else {
             yAxis = center.y - windowHeightScaled/2;
-        };
+        }
 
         if (imagePositionSetting.includes('right')){                            // move image to right of canvas
             const sidebar = document.getElementById('sidebar');
@@ -226,18 +222,18 @@ class ImageHoverHUD extends BasePlaceableHUD {
         if (!token || !token.actor || (imageHoverActive === false) || (token.actor.permission < actorRequirementSetting && token.actor.data.permission['default'] !== -1)) {
             return;
         }
-        
+
         if (hovered && canvas.activeLayer.name == 'TokenLayer') {       // Show token image if hovered, otherwise don't
             this.bind(token);
         } else {
             this.clear();
-        };
+        }
     }
-};
+}
 
 /**
  * Add Image Hover display to html on load.
- * Note: Fix hack - reconfigure and create a new sibling to the current hud element. 
+ * Note: Fix hack - reconfigure and create a new sibling to the current hud element.
  */
 Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
 
@@ -269,7 +265,7 @@ Hooks.on("createToken", (scene, data) => {
     let imageToCache = tokenId.img;
     if (imageToCache === DEFAULT_TOKEN) {
         imageToCache = data.img;
-    };
+    }
     if (imageToCache && !(imageToCache in cacheImageNames)) {
         canvas.hud.imageHover.cacheAvailableToken(imageToCache, false, false)
     }
@@ -282,12 +278,12 @@ Hooks.on("createToken", (scene, data) => {
  * @param {Boolean} hovered if token is mouseovered
  */
 Hooks.on('hoverToken', (token, hovered) => {
-    if (!hovered || (event && event.altKey)) {	// alt key in Foundry auto hovers all tokens in Foundry
+    if (!hovered || (game?.keyboard?.isModifierActive(KeyboardManager.MODIFIER_KEYS.ALT))) {	// alt key in Foundry auto hovers all tokens in Foundry
         canvas.hud.imageHover.clear();
         return;
     }
-    
-    if (keybindActive === false) {
+
+    if (!game?.keybindings?.bindings?.get("image-hover.userKeybindButton")[0]?.key) {
         canvas.hud.imageHover.showArtworkRequirements(token, hovered)
     }
 });
@@ -314,7 +310,7 @@ Hooks.on("canvasPan", (...args) => {
             return;
         }
         canvas.hud.imageHover.updatePosition();
-    };
+    }
 });
 
 /**
@@ -327,16 +323,4 @@ Hooks.on("init", function() {
 
 Hooks.on("closeSettingsConfig", function() {
     registerModuleSettings()
-});
-
-/**
- * add event listener when keybind setting is activated
- */
-document.addEventListener('keydown', event => {
-	if (keybindActive && KeybindLib.isBoundTo(event, 'image-hover', 'userKeybindButton')) {
-        const hoveredToken = canvas.tokens._hover
-        if (hoveredToken !== null) {
-            canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true);
-        }
-    }
 });

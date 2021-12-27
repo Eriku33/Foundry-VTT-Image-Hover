@@ -6,7 +6,7 @@ export class Settings {
             hint: "Required permission level of Actor to see handout.",     // Setting description
             scope: "world",         // Global setting
             config: true,           // Show setting in configuration view
-            restricted: true,       // Game master only   
+            restricted: true,       // Game master only
             choices: {              // Choices
                     "0": "None",
                     "1": "Limited",
@@ -23,7 +23,7 @@ export class Settings {
             hint: "The type of art shown on hover",     // Setting description
             scope: "world",         // Global setting
             config: true,           // Show setting in configuration view
-            restricted: true,       // Game master only   
+            restricted: true,       // Game master only
             choices: {              // Choices
                     "character": "Character art",
                     "token": "Token art",
@@ -44,34 +44,23 @@ export class Settings {
             onChange: value => { canvas.hud.imageHover.clear()}
         });
 
-        // client setting
-        game.settings.register("image-hover", "userEnableKeybind", {
-            name: "Enable/Disable Keybind requirement",                               // Setting name
-            hint: "Check to enable a keybind requirement while hovering a token (per user).",               // Setting description
-            scope: "client",        // client-stored setting
-            config: true,           // Show setting in configuration view
-            type: Boolean,          // Value type
-            default: false,         // The default value for the setting
-        });
+      game.keybindings.register("image-hover", "userKeybindButton", {
+        name: "Keybind",                                    // Setting name
+        hint: "Assign the additional keybind requirement to show a image while hovering a token (per user).",     // Setting description
+        editable: [
+        ],
+        onDown: () => {
+          const hoveredToken = canvas.tokens._hover
+          if (hoveredToken !== null) {
+            canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true);
+          }
+        },
+        restricted: false,
+        reservedModifiers: [],
+        precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
+      });
 
-        // client setting
-        //game.settings.register("image-hover", "userKeybindButton", {
-        //    name: "Keybind",                                    // Setting name
-        //    hint: "Assign the additional keybind requirement to show a image while hovering a token (per user).",     // Setting description
-        //    type: window.Azzu.SettingsTypes.KeyBinding,
-        //    scope: "client",        // Client-stored setting
-        //    config: true,           // Show setting in configuration view
-        //    default: 'v',           // Default Value
-        //});
 
-        KeybindLib.register("image-hover", "userKeybindButton", {
-            name: "Keybind",                                    // Setting name
-            hint: "Assign the additional keybind requirement to show a image while hovering a token (per user).",     // Setting description
-            scope: "client",        // Client-stored setting
-            default: "KeyV",
-            config: true,
-        });
-        
 
         // client setting
         game.settings.register("image-hover", "userImagePosition", {
