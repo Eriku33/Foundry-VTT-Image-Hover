@@ -5,8 +5,7 @@ import { Settings } from './settings.js';
  */
 let actorRequirementSetting = "None";                               // required actor premission to see character art
 let imageHoverActive = true;                                        // Enable/Disable module
-let keybindActive = false;                                          // Enable/Disable keybind requirement while hovering
-let keybindKeySet = 'KeyV'                                          // configurable keybind
+// let keybindActive = false;                                          // Enable/Disable keybind requirement while hovering
 let imagePositionSetting = "Bottom left";                           // location of character art
 let imageSizeSetting = 7;                                           // size of character art
 let imageHoverArt = "character";                                    // Art type on hover (Character art or Token art)
@@ -26,8 +25,7 @@ let cacheImageNames = new Object();                                 // url file 
 function registerModuleSettings() {
     actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');
     imageHoverActive = game.settings.get('image-hover', 'userEnableModule');
-    keybindActive = game.settings.get('image-hover', 'userEnableKeybind');
-    keybindKeySet = game.settings.get( 'image-hover', 'userKeybindButton');
+    //keybindActive = game.settings.get('image-hover', 'userEnableKeybind');
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
     imageHoverArt = game.settings.get('image-hover', 'artType');
@@ -282,12 +280,12 @@ Hooks.on("createToken", (scene, data) => {
  * @param {Boolean} hovered if token is mouseovered
  */
 Hooks.on('hoverToken', (token, hovered) => {
-    if (!hovered || (event && event.altKey)) {	// alt key in Foundry auto hovers all tokens in Foundry
+    if (!hovered || (game.keyboard.isModifierActive(KeyboardManager.MODIFIER_KEYS.ALT))) {	// alt key in Foundry auto hovers all tokens in Foundry
         canvas.hud.imageHover.clear();
         return;
     }
     
-    if (keybindActive === false) {
+    if (!game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key) {
         canvas.hud.imageHover.showArtworkRequirements(token, hovered)
     }
 });
@@ -332,11 +330,11 @@ Hooks.on("closeSettingsConfig", function() {
 /**
  * add event listener when keybind setting is activated
  */
-document.addEventListener('keydown', event => {
-	if (keybindActive && KeybindLib.isBoundTo(event, 'image-hover', 'userKeybindButton')) {
-        const hoveredToken = canvas.tokens._hover
-        if (hoveredToken !== null) {
-            canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true);
-        }
-    }
-});
+// document.addEventListener('keydown', event => {
+// 	if (keybindActive && KeybindLib.isBoundTo(event, 'image-hover', 'userKeybindButton')) {
+//         const hoveredToken = canvas.tokens._hover
+//         if (hoveredToken !== null) {
+//             canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true);
+//         }
+//     }
+// });
