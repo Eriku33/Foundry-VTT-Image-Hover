@@ -19,10 +19,12 @@ User must be on the token layer to see the character art, if no character art ex
 ![image-hover-animation-example](pics/image-hover-example-1.gif)
 
 ## Settings
-![preview](pics/image-hover-settings.png?raw=true)
+![preview](pics/image-hover-settings.PNG?raw=true)
 ### Required actor permission
 Setting for game masters to configure the required actor ownership to see character art.<br>
 Default: None - All users can hover over any token and see character art.
+### Art on hover
+Choose the type of artwork shown for tokens when hovered.
 ### Enable/Disable Image Hover
 Each user can disable the module.<br>
 Default: On
@@ -32,3 +34,7 @@ Default: Bottom Left
 ### Image to monitor width
 Each user can configure the size of the image based on the width of their monitor.<br>
 Default: 7 - Image will take up <sup>1</sup>&frasl;<sub>7</sub>th of your screen.
+
+### Set a keybind requirement while hovering a token
+If a keybind is set in Game settings-Configure controls, that key will be required to be pressed while hovering over a token to see the art.
+If no keybind is set, Art will be shown on token hover.
