@@ -223,7 +223,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
             return;
         }
         
-        if (hovered && canvas.activeLayer.name == 'TokenLayer') {       // Show token image if hovered, otherwise don't
+        if (hovered && (canvas.activeLayer.name == 'TokenLayer' || canvas.activeLayer.name == 'TokenLayerPF2e')) {       // Show token image if hovered, otherwise don't
             this.bind(token);
         } else {
             this.clear();
