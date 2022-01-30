@@ -16,6 +16,7 @@ To install, search for Image Hover in the module list or follow these instructio
 ## Description
 A module that allows users to hover over actor tokens and see the character art.<br>
 User must be on the token layer to see the character art, if no character art exists (default icon), token art is used instead.
+
 ![image-hover-animation-example](pics/image-hover-example-1.gif)
 
 ## Settings
