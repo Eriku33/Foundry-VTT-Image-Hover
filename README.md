@@ -26,6 +26,7 @@ Setting for game masters to configure the required actor ownership to see charac
 Default: None - All users can hover over any token and see character art.
 ### Art on hover
 Choose the type of artwork shown for tokens when hovered.
+Default: Character art
 ### Enable/Disable Image Hover
 Each user can disable the module.<br>
 Default: On
