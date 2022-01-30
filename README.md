@@ -4,10 +4,9 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 1.1.8
-* **Foundry VTT Compatibility**: 0.7.7+
+* **Version**: 1.1.9
+* **Foundry VTT Compatibility**: 9+ (Release 1.1.8 is compatible with previous version of Foundry VTT)
 * **System Compatibility**: dnd5e and most others but have not checked.
-* **Dependencies**: keybind lib module(https://foundryvtt.com/packages/keybind-lib)
 ## Installation
 To install, search for Image Hover in the module list or follow these instructions:
 
@@ -27,12 +26,6 @@ Default: None - All users can hover over any token and see character art.
 ### Enable/Disable Image Hover
 Each user can disable the module.<br>
 Default: On
-### Enable/Disable Keybind requirement
-Each user can add a additional keybind requirement while hovering over a token.<br>
-Default: off
-### Keybind
-Each user can set this keybind<br>
-Default: KeyV
 ### Position of Image
 Each user can relocate the cahracter art to a different corner of the screen (Bottom left/right and Top left/right)<br>
 Default: Bottom Left
