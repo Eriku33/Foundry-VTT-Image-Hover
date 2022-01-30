@@ -44,16 +44,6 @@ export class Settings {
             onChange: value => { canvas.hud.imageHover.clear()}
         });
 
-        // // client setting
-        // game.settings.register("image-hover", "userEnableKeybind", {
-        //     name: "Enable/Disable Keybind requirement",                               // Setting name
-        //     hint: "Check to enable a keybind requirement while hovering a token (per user).",               // Setting description
-        //     scope: "client",        // client-stored setting
-        //     config: true,           // Show setting in configuration view
-        //     type: Boolean,          // Value type
-        //     default: false,         // The default value for the setting
-        // });
-
         // client setting
         game.keybindings.register("image-hover", "userKeybindButton", {
             name: "Assign a keybind requirement while hovering over a token.",                               // Setting name

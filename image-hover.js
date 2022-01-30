@@ -5,7 +5,6 @@ import { Settings } from './settings.js';
  */
 let actorRequirementSetting = "None";                               // required actor premission to see character art
 let imageHoverActive = true;                                        // Enable/Disable module
-// let keybindActive = false;                                          // Enable/Disable keybind requirement while hovering
 let imagePositionSetting = "Bottom left";                           // location of character art
 let imageSizeSetting = 7;                                           // size of character art
 let imageHoverArt = "character";                                    // Art type on hover (Character art or Token art)
@@ -25,7 +24,6 @@ let cacheImageNames = new Object();                                 // url file 
 function registerModuleSettings() {
     actorRequirementSetting = game.settings.get('image-hover', 'permissionOnHover');
     imageHoverActive = game.settings.get('image-hover', 'userEnableModule');
-    //keybindActive = game.settings.get('image-hover', 'userEnableKeybind');
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
     imageHoverArt = game.settings.get('image-hover', 'artType');
@@ -326,15 +324,3 @@ Hooks.on("init", function() {
 Hooks.on("closeSettingsConfig", function() {
     registerModuleSettings()
 });
-
-/**
- * add event listener when keybind setting is activated
- */
-// document.addEventListener('keydown', event => {
-// 	if (keybindActive && KeybindLib.isBoundTo(event, 'image-hover', 'userKeybindButton')) {
-//         const hoveredToken = canvas.tokens._hover
-//         if (hoveredToken !== null) {
-//             canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true);
-//         }
-//     }
-// });
