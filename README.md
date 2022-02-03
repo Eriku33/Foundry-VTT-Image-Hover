@@ -4,7 +4,7 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 1.1.9
+* **Version**: 2.0.1 (Scheduled for release)
 * **Foundry VTT Compatibility**: 9+ (Release 1.1.8 is compatible with previous versions of Foundry VTT)
 * **System Compatibility**: dnd5e and most others but have not checked.
 ## Installation
@@ -14,18 +14,19 @@ To install, search for Image Hover in the module list or follow these instructio
 2.  Click the Install Module button and enter the following URL:<br>https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/latest/download/module.json.
 
 ## Description
-A module that allows users to hover over actor tokens and see the character art.<br>
-User must be on the token layer to see the character art, if no character art exists (default icon), token art is used instead.
+A module built on top of the Foundry Virtual Tabletop API that allows users to hover over actor tokens and see the character art.<br>
+User must be on the token layer to see the character art, if no character art exists (default icon), token art is used instead.<br>
+Image hover also supports animated file types that Foundry allows.  
 
-![image-hover-animation-example](pics/image-hover-example-1.gif)
+![image-hover-animation-example](pics/image-hover-v2.0.1-example.gif)
 
 ## Settings
-![preview](pics/image-hover-settings.PNG?raw=true)
+![preview](pics/image-hover-v2.0.1-settings.PNG?raw=true)
 ### Required actor permission
 Setting for game masters to configure the required actor ownership to see character art.<br>
-Default: None - All users can hover over any token and see character art.
+Default: None - All users can hover over any token and see art.
 ### Art on hover
-Choose the type of artwork shown for tokens when hovered.
+Choose the type of artwork shown for tokens when hovered.<br>
 Default: Character art
 ### Enable/Disable Image Hover
 Each user can disable the module.<br>
@@ -36,7 +37,14 @@ Default: Bottom Left
 ### Image to monitor width
 Each user can configure the size of the image based on the width of their monitor.<br>
 Default: 7 - Image will take up <sup>1</sup>&frasl;<sub>7</sub>th of your screen.
+### Hover delay 
+Each user can add a hover time requirement before image shows up (1000 miliseconds = 1 second).<br>
+Default: 0 - No delay.
 
-### Set a keybind requirement while hovering a token
-If a keybind is set in Game settings-Configure controls, that key will be required to be pressed while hovering over a token to see the art.
-If no keybind is set, Art will be shown on token hover.
+## Set a keybind requirement while hovering a token
+If a keybind is set in Game settings-Configure controls, that key will be required to be pressed while hovering over a token to see the art.<br>
+If no keybind is set, art will be shown on token hover.
+
+## Hide art for specific token (Game master only)
+If Hide Image Hover Art checkbox is ticked, art will not be shown to anyone on hover.<br>
+![image-hover-settings-example](pics/image-hover-token-setting.gif)
