@@ -88,5 +88,20 @@ export class Settings {
                 default: 7,             // Default Value
                 type: Number            // Value type
         });
+
+            // client setting
+            game.settings.register("image-hover", "userHoverDelay", {
+                name: "Hover delay",                                    // Setting name
+                hint: "Required hover time to show art work (miliseconds).",     // Setting description
+                scope: "client",        // Client-stored setting
+                config: true,           // Show setting in configuration view
+                range: {                // Choices
+                        min: 0,
+                        max: 5000,
+                        step: 100
+                },
+                default: 0,             // Default Value
+                type: Number            // Value type
+        });
     }
 }

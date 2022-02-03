@@ -8,6 +8,7 @@ let imageHoverActive = true;                                        // Enable/Di
 let imagePositionSetting = "Bottom left";                           // location of character art
 let imageSizeSetting = 7;                                           // size of character art
 let imageHoverArt = "character";                                    // Art type on hover (Character art or Token art)
+let imageHoverDelay = 0;
 let DEFAULT_TOKEN = "icons/svg/mystery-man.svg";                    // default token for foundry vtt
 
 /**
@@ -27,6 +28,7 @@ function registerModuleSettings() {
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
     imageHoverArt = game.settings.get('image-hover', 'artType');
+    imageHoverDelay = game.settings.get('image-hover', 'userHoverDelay')
 };
 
 /**
@@ -40,7 +42,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
     static get defaultOptions() {
 	return mergeObject(super.defaultOptions, {
             id: "image-hover-hud",
-            classes: [...super.defaultOptions.classes, 'image-hover-hud'],      // Use default "placeable-hud"
+            classes: [...super.defaultOptions.classes, 'image-hover-hud'],
             minimizable: false,
             resizable: true,
 	        template: "modules/image-hover/templates/image-hover-template.html" // HTML template
@@ -201,7 +203,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
             if (imagePositionSetting.includes('Bottom') && sidebarCollapsed) {
                 xAxis = center.x + windowWidthScaled/2 - imageWidthScaled;      // take into account if sidebar is collapsed
             } else {
-                const sidebarWidthScaled = sidebar.offsetWidth/center.scale;
+                const sidebarWidthScaled = sidebar.offsetWidth/center.scale + parseFloat(window.getComputedStyle(sidebar, null).getPropertyValue('margin-right'))/center.scale;
                 xAxis = center.x + windowWidthScaled/2 - imageWidthScaled - sidebarWidthScaled;
             }
         } else {
@@ -223,8 +225,19 @@ class ImageHoverHUD extends BasePlaceableHUD {
             return;
         }
         
+        /**
+         * check flag to hide art for everyone
+         */
+        if (token.document.getFlag('image-hover', 'hideArt')){
+            return;
+        }
+        
         if (hovered && (canvas.activeLayer.name == 'TokenLayer' || canvas.activeLayer.name == 'TokenLayerPF2e')) {       // Show token image if hovered, otherwise don't
-            this.bind(token);
+            setTimeout(function() {
+                if (token == canvas.tokens._hover) {
+                    canvas.hud.imageHover.bind(token);
+                }
+            }, imageHoverDelay);
         } else {
             this.clear();
         };
@@ -233,7 +246,6 @@ class ImageHoverHUD extends BasePlaceableHUD {
 
 /**
  * Add Image Hover display to html on load.
- * Note: Fix hack - reconfigure and create a new sibling to the current hud element. 
  */
 Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
 
@@ -283,6 +295,9 @@ Hooks.on('hoverToken', (token, hovered) => {
         return;
     }
     
+    /**
+     * Check no keybind requirement set.
+     */
     if (!game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key) {
         canvas.hud.imageHover.showArtworkRequirements(token, hovered)
     }
@@ -324,3 +339,23 @@ Hooks.on("init", function() {
 Hooks.on("closeSettingsConfig", function() {
     registerModuleSettings()
 });
+
+/**
+ * Add checkbox option in token configuration to hide image art to all.
+ * Only Game masters can change this setting.
+ */
+const renderHoverSetting = async (app, html, data) => {
+    /**
+     * Create image hover flag and apply to checkbox in the new created token configuration.
+     * Update flag as token is updated.
+     */
+    if (data.isGM) {
+        let hideImageStatus = app.object.getFlag('image-hover', 'hideArt') ? "checked": "";
+        const nav = html.find(`div[data-tab="appearance"]`);
+        data.hideHoverStatus = hideImageStatus;
+        const contents = await renderTemplate('modules/image-hover/templates/image-hover-token-config.html', data); 
+        nav.append(contents);
+        app.setPosition({ height: 'auto' });
+    };
+};
+Hooks.on("renderTokenConfig", renderHoverSetting);
