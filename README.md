@@ -46,7 +46,8 @@ Each user can add a hover time requirement before image shows up.<br>
 Default: 700 (0.7 seconds).
 
 ## Set a keybind requirement while hovering a token
-If a keybind is set in Game settings-Configure controls, that key will be required to be pressed while hovering over a token to see the art.<br>
+If a keybind is set in Game settings-Configure controls, that key will be required to be pressed while hovering 
+over a token to see the art (Hover delay will be set to 0).<br>
 If no keybind is set, art will be shown on token hover.
 
 ## Hide art for specific token (Game master only)
