@@ -27,7 +27,8 @@ export class Settings {
             choices: {              // Choices
                     "character": "Character art",
                     "token": "Token art",
-                    "wildcard": "Token art if wildcard"
+                    "wildcard": "Token art if wildcard",
+                    "linked": "Token art if unlinked"
             },
             default: "character",   // Default value
             type: String            // Value type
@@ -52,7 +53,7 @@ export class Settings {
             onDown: () => {
                 const hoveredToken = canvas.tokens._hover
                 if (hoveredToken !== null) {
-                    canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true);
+                    canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true, 0);
                 }
             },
             reservedModifiers: ["ALT"]
@@ -100,7 +101,7 @@ export class Settings {
                         max: 5000,
                         step: 100
                 },
-                default: 0,             // Default Value
+                default: 700,           // Default Value
                 type: Number            // Value type
         });
     }
