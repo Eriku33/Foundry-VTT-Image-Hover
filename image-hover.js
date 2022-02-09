@@ -257,7 +257,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
  */
 Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
 
-    html[0].style.zIndex = 70;                                      // Sets image to show above other UI. This is definately a hack!
+    html[0].style.zIndex = 101;                                      // Sets image to show above other UI. (Small time module = 100)
     html.append(`<template id="image-hover-hud"></template>`);
     canvas.hud.imageHover = new ImageHoverHUD();
 
@@ -321,7 +321,7 @@ Hooks.on('hoverToken', (token, hovered) => {
      * Update flag as token is updated.
      */
     if (data.isGM) {
-        let hideImageStatus = app.object.getFlag('image-hover', 'hideArt') ? "checked": "";
+        let hideImageStatus = app.token.getFlag('image-hover', 'hideArt') ? "checked": "";
         const nav = html.find(`div[data-tab="appearance"]`);
         data.hideHoverStatus = hideImageStatus;
         const contents = await renderTemplate('modules/image-hover/templates/image-hover-token-config.html', data); 
