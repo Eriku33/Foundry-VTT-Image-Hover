@@ -240,7 +240,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
         
         if (hovered && (canvas.activeLayer.name == 'TokenLayer' || canvas.activeLayer.name == 'TokenLayerPF2e')) {       // Show token image if hovered, otherwise don't
             setTimeout(function() {
-                if (token == canvas.tokens._hover) {
+                if (token == canvas.tokens._hover && token.actor.img == canvas.tokens._hover.actor.img) {
                     canvas.hud.imageHover.bind(token);
                 } else {
                     canvas.hud.imageHover.clear()

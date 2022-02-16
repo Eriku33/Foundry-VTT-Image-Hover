@@ -101,7 +101,7 @@ export class Settings {
                         max: 5000,
                         step: 100
                 },
-                default: 700,           // Default Value
+                default: 0,           // Default Value
                 type: Number            // Value type
         });
     }
