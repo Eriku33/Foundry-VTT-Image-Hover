@@ -246,7 +246,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
         /**
          * Do not show art for chat portrait module (hover hook doesn't trigger out properly).
          */
-        if (chatPortraitActive){
+        if (chatPortraitActive && !game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key){
             var x = event.clientX
             var y = event.clientY
             var elementMouseIsOver = document.elementFromPoint(x, y);                       // element where mouse is
