@@ -11,6 +11,9 @@ let imageHoverArt = "character";                                    // Art type 
 let imageHoverDelay = 0;                                            // Hover time requirement (miliseconds)
 let DEFAULT_TOKEN = "icons/svg/mystery-man.svg";                    // default token for foundry vtt
 
+let chatPortraitActive = false                                      // chat portrait incompatability check
+
+
 /**
  * Supported Foundry VTT file types
  */
@@ -29,6 +32,8 @@ function registerModuleSettings() {
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
     imageHoverArt = game.settings.get('image-hover', 'artType');
     imageHoverDelay = game.settings.get('image-hover', 'userHoverDelay')
+    chatPortraitActive = game.modules.get("chat-portrait")?.active      // Undefined if module not installed)
+
 };
 
 /**
@@ -237,7 +242,19 @@ class ImageHoverHUD extends BasePlaceableHUD {
         if (token.document.getFlag('image-hover', 'hideArt')){
             return;
         }
-        
+
+        /**
+         * Do not show art for chat portrait module (hover hook doesn't trigger out properly).
+         */
+        if (chatPortraitActive){
+            var x = event.clientX
+            var y = event.clientY
+            var elementMouseIsOver = document.elementFromPoint(x, y);                       // element where mouse is
+            if (elementMouseIsOver.classList.contains("message-portrait")){
+                return;
+            }
+        } 
+
         if (hovered && (canvas.activeLayer.name == 'TokenLayer' || canvas.activeLayer.name == 'TokenLayerPF2e')) {       // Show token image if hovered, otherwise don't
             setTimeout(function() {
                 if (token == canvas.tokens._hover && token.actor.img == canvas.tokens._hover.actor.img) {
