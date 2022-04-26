@@ -247,11 +247,13 @@ class ImageHoverHUD extends BasePlaceableHUD {
          * Do not show art for chat portrait module (hover hook doesn't trigger out properly).
          */
         if (chatPortraitActive && !game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key){
-            var x = event.clientX
-            var y = event.clientY
-            var elementMouseIsOver = document.elementFromPoint(x, y);                       // element where mouse is
-            if (elementMouseIsOver.classList.contains("message-portrait")){
-                return;
+            if (event){
+                var x = event.clientX
+                var y = event.clientY
+                var elementMouseIsOver = document.elementFromPoint(x, y);                       // element where mouse is
+                if (elementMouseIsOver.classList.contains("message-portrait") ||elementMouseIsOver.classList.contains("chat-message") ){
+                    return;
+                }
             }
         } 
 
@@ -274,7 +276,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
  */
 Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
 
-    html[0].style.zIndex = 101;                                      // Sets image to show above other UI. (Small time module = 100)
+    html[0].style.zIndex = 70;
     html.append(`<template id="image-hover-hud"></template>`);
     canvas.hud.imageHover = new ImageHoverHUD();
 
