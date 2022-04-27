@@ -181,8 +181,8 @@ class ImageHoverHUD extends BasePlaceableHUD {
 
     /**
      * Rescale original image and move to correct location within the canvas.
-     * imagePositionSetting options include Bottom right/left and Top right/left
-     * @param {Number} imageWidth width of original image (pixles)
+     * imagePositionSetting options include Bottom right/left, Top right/left and Center
+     * @param {Number} imageWidth width of original image (pixels)
      * @param {Number} imageHeight height of original image (pixels)
      */
     changePosition(imageWidth, imageHeight) {
@@ -194,7 +194,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
         let xAxis = 0;
         let yAxis = 0;
 
-        if (imageHeightScaled > windowHeightScaled){                            // Height of image bigger than  window height
+        if (imageHeightScaled > windowHeightScaled){                            // Height of image bigger than window height
             imageWidthScaled = (windowHeightScaled/imageHeightScaled) * imageWidthScaled;
             imageHeightScaled = windowHeightScaled;
         };
@@ -206,12 +206,21 @@ class ImageHoverHUD extends BasePlaceableHUD {
             yAxis = center.y - windowHeightScaled/2;
         };
 
+        const sidebar = document.getElementById('sidebar');
+        const sidebarCollapsed = sidebar.classList.contains("collapsed");         // take into account if sidebar is collapsed
+
+        if(imagePositionSetting == "Center"){
+            if (sidebarCollapsed){
+                return [center.x-imageWidthScaled/2, center.y-imageHeightScaled/2, imageWidthScaled]
+            } else {
+                return [center.x-imageWidthScaled/2 - (sidebar.offsetWidth/center.scale)/3, center.y-imageHeightScaled/2, imageWidthScaled]
+            }
+        }
+
 
         if (imagePositionSetting.includes('right')){                            // move image to right of canvas
-            const sidebar = document.getElementById('sidebar');
-            const sidebarCollapsed = sidebar.classList.contains("collapsed");
             if (imagePositionSetting.includes('Bottom') && sidebarCollapsed) {
-                xAxis = center.x + windowWidthScaled/2 - imageWidthScaled;      // take into account if sidebar is collapsed
+                xAxis = center.x + windowWidthScaled/2 - imageWidthScaled;
             } else {
                 const sidebarWidthScaled = sidebar.offsetWidth/center.scale + parseFloat(window.getComputedStyle(sidebar, null).getPropertyValue('margin-right'))/center.scale;
                 xAxis = center.x + windowWidthScaled/2 - imageWidthScaled - sidebarWidthScaled;
