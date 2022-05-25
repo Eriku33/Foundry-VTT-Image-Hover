@@ -70,7 +70,7 @@ export class Settings {
                 "Bottom right": "Bottom right",
                 "Top left": "Top left",
                 "Top right": "Top right",
-                "Center": "Center"
+                "Centre": "Centre"
             },
             default: "Bottom left",   // Default Value
             type: String              // Value type
