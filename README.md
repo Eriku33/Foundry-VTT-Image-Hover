@@ -36,7 +36,7 @@ Default: Character art
 Each user can disable the module.<br>
 Default: On
 ### Position of Image
-Each user can relocate the cahracter art to a different corner of the screen (Bottom left/right and Top left/right)<br>
+Each user can relocate the cahracter art to a different corner of the screen (Bottom left/right , Top left/right and Centre)<br>
 Default: Bottom Left
 ### Image to monitor width
 Each user can configure the size of the image based on the width of their monitor.<br>
