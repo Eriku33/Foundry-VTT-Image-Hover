@@ -10,6 +10,8 @@ let imageSizeSetting = 7;                                           // size of c
 let imageHoverArt = "character";                                    // Art type on hover (Character art or Token art)
 let imageHoverDelay = 0;                                            // Hover time requirement (miliseconds)
 let DEFAULT_TOKEN = "icons/svg/mystery-man.svg";                    // default token for foundry vtt
+let showSpecificArt = false;                                        // track when to show/hide art when GM uses keybind to show art.
+let showArtTimer = 6000;                                            // Time (miliseconds) spent showing art when GM decides to "showSpecificArt" to everyone.
 
 let chatPortraitActive = false                                      // chat portrait incompatability check
 
@@ -32,9 +34,17 @@ function registerModuleSettings() {
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
     imageHoverArt = game.settings.get('image-hover', 'artType');
     imageHoverDelay = game.settings.get('image-hover', 'userHoverDelay')
+    showArtTimer =game.settings.get("image-hover", 'showArtTimer')
     chatPortraitActive = game.modules.get("chat-portrait")?.active      // Undefined if module not installed)
 
 };
+
+function registerShowArtSocket() {
+    game.socket.on("module.image-hover", (tokenID) => {
+        const token = canvas.tokens.get(tokenID);
+        canvas.hud.imageHover.showToAll(token);
+    });
+}
 
 /**
  * Copy Placeable HUD template
@@ -238,6 +248,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
      * @param {Number} delay hover time requirement (miliseconds) to show art.
      */
     showArtworkRequirements(token, hovered, delay) {
+
         /**
          * check token is actor, module is enabled, user has permissions to see character art
          */
@@ -255,8 +266,9 @@ class ImageHoverHUD extends BasePlaceableHUD {
         /**
          * Do not show art for chat portrait module (hover hook doesn't trigger out properly).
          */
-        if (chatPortraitActive && !game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key){
+        if (chatPortraitActive && !game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key && !game.keybindings.bindings.get("image-hover.showAllKey")[0]?.key){
             if (event){
+
                 var x = event.clientX
                 var y = event.clientY
                 var elementMouseIsOver = document.elementFromPoint(x, y);                       // element where mouse is
@@ -265,6 +277,13 @@ class ImageHoverHUD extends BasePlaceableHUD {
                 }
             }
         } 
+
+        /**
+         * Do not show new art or hide current art if Gm has triggerd the "showToAll" option for n seconds.
+         */
+        if (showSpecificArt) {
+            return;
+        }
 
         if (hovered && (canvas.activeLayer.name == 'TokenLayer' || canvas.activeLayer.name == 'TokenLayerPF2e')) {       // Show token image if hovered, otherwise don't
             setTimeout(function() {
@@ -277,6 +296,24 @@ class ImageHoverHUD extends BasePlaceableHUD {
         } else {
             this.clear();
         };
+    }
+
+    /**
+     * Triggers the art token to be shown for (set in game settings by GM) seconds.
+     * Only used when GM uses the "show to all" (set in keybind settings).
+     * token is shown to everyone (bypasses all settings apart from if "user disable image hover" setting)
+     * GM and users must be on same scene.
+     * @param {*} token token passed in
+     */
+    showToAll(token) {
+        if (token && imageHoverActive) {
+            showSpecificArt = true;
+            canvas.hud.imageHover.bind(token);
+            setTimeout(function() {
+                showSpecificArt = false;
+                canvas.hud.imageHover.clear();
+            }, showArtTimer);
+        }
     }
 };
 
@@ -326,6 +363,10 @@ Hooks.on("createToken", (scene, data) => {
  * @param {Boolean} hovered if token is mouseovered
  */
 Hooks.on('hoverToken', (token, hovered) => {
+
+    if (showSpecificArt) {
+        return;
+    }
     if (!hovered || (game.keyboard.isModifierActive(KeyboardManager.MODIFIER_KEYS.ALT))) {	// alt key in Foundry auto hovers all tokens in Foundry
         canvas.hud.imageHover.clear();
         return;
@@ -343,7 +384,7 @@ Hooks.on('hoverToken', (token, hovered) => {
  * Add checkbox option in token configuration to hide image art to all.
  * Only Game masters can change this setting.
  */
- const renderHoverSetting = async (app, html, data) => {
+const renderHoverSetting = async (app, html, data) => {
     /**
      * Create image hover flag and apply to checkbox in the new created token configuration.
      * Update flag as token is updated.
@@ -356,6 +397,7 @@ Hooks.on('hoverToken', (token, hovered) => {
         nav.append(contents);
         app.setPosition({ height: 'auto' });
     };
+
 };
 Hooks.on("renderTokenConfig", renderHoverSetting);
 
@@ -388,10 +430,11 @@ Hooks.on("canvasPan", (...args) => {
  * On Foundry world load, register module settings.
  */
 Hooks.on("init", function() {
-    Settings.createSettings()
-    registerModuleSettings()
+    Settings.createSettings();
+    registerModuleSettings();
+    registerShowArtSocket();
 });
 
 Hooks.on("closeSettingsConfig", function() {
-    registerModuleSettings()
+    registerModuleSettings();
 });

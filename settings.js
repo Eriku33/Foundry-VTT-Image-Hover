@@ -34,6 +34,38 @@ export class Settings {
             type: String            // Value type
         });
 
+        // Game master setting
+        game.keybindings.register("image-hover", "showAllKey", {
+            name: "Assign a keybind to show all users art.",                // Setting name
+            hint: "Dont use Alt key, it won't work.",                       // Setting description
+            restricted: true,
+            editable:[],
+            onDown: () => {
+                const hoveredToken = canvas.tokens._hover
+                if (hoveredToken !== null && !game.keyboard.isModifierActive(KeyboardManager.MODIFIER_KEYS.ALT)) {
+                    canvas.hud.imageHover.showToAll(hoveredToken);                          // apply to self
+                    game.socket.emit("module.image-hover", hoveredToken.id)                 // emit to all other users
+                }
+            },
+            reservedModifiers: ["ALT"]
+        });
+
+        // Game master setting
+        game.settings.register("image-hover", "showArtTimer", {
+            name: "Time spent showing everyone art",                             // Setting name
+            hint: "Time (miliseconds) that art appears to users on the same scene when the \"show all\" keybind is pressed.",     // Setting description
+            restricted: true,       // Game master only   
+            scope: "world",         // Global setting
+            config: true,           // Show setting in configuration view
+            range: {                // Choices
+                    min: 1000,
+                    max: 15000,
+                    step: 200
+            },
+            default: 6000,          // Default Value
+            type: Number            // Value type
+        });
+
         // client setting
         game.settings.register("image-hover", "userEnableModule", {
             name: "Enable/Disable Image Hover",                               // Setting name
@@ -47,7 +79,7 @@ export class Settings {
 
         // client setting
         game.keybindings.register("image-hover", "userKeybindButton", {
-            name: "Assign a keybind requirement while hovering over a token.",                               // Setting name
+            name: "Assign a keybind requirement to show art while hovering over a token.",                               // Setting name
             hint: "Dont use Alt key, it won't work.",               // Setting description
             editable:[],
             onDown: () => {
@@ -78,32 +110,32 @@ export class Settings {
 
         // client setting
         game.settings.register("image-hover", "userImageSize", {
-                name: "Image to monitor width",                                    // Setting name
-                hint: "Changes the size of the image (per user), smaller value implies larger image (1/value of your screen width).",     // Setting description
-                scope: "client",        // Client-stored setting
-                config: true,           // Show setting in configuration view
-                range: {                // Choices
-                        min: 3,
-                        max: 20,
-                        step: 0.5
-                },
-                default: 7,             // Default Value
-                type: Number            // Value type
+            name: "Image to monitor width",                                    // Setting name
+            hint: "Changes the size of the image (per user), smaller value implies larger image (1/value of your screen width).",     // Setting description
+            scope: "client",        // Client-stored setting
+            config: true,           // Show setting in configuration view
+            range: {                // Choices
+                    min: 3,
+                    max: 20,
+                    step: 0.5
+            },
+            default: 7,             // Default Value
+            type: Number            // Value type
         });
 
-            // client setting
-            game.settings.register("image-hover", "userHoverDelay", {
-                name: "Hover delay",                                    // Setting name
-                hint: "Required hover time to show art work (miliseconds).",     // Setting description
-                scope: "client",        // Client-stored setting
-                config: true,           // Show setting in configuration view
-                range: {                // Choices
-                        min: 0,
-                        max: 5000,
-                        step: 100
-                },
-                default: 0,           // Default Value
-                type: Number            // Value type
+        // client setting
+        game.settings.register("image-hover", "userHoverDelay", {
+            name: "Mouse hover time requirement",                            // Setting name
+            hint: "Required hover time to show art work (miliseconds).",     // Setting description
+            scope: "client",        // Client-stored setting
+            config: true,           // Show setting in configuration view
+            range: {                // Choices
+                    min: 0,
+                    max: 5000,
+                    step: 100
+            },
+            default: 0,           // Default Value
+            type: Number            // Value type
         });
     }
 }
