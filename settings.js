@@ -19,8 +19,8 @@ export class Settings {
 
         // Game master setting
         game.settings.register("image-hover", "artType", {
-            name: "Art on hover",                              // Setting name
-            hint: "The type of art shown on hover",     // Setting description
+            name: "Art on hover",                                           // Setting name
+            hint: "The type of art shown on hover",                         // Setting description
             scope: "world",         // Global setting
             config: true,           // Show setting in configuration view
             restricted: true,       // Game master only   
@@ -41,10 +41,10 @@ export class Settings {
             restricted: true,
             editable:[],
             onDown: () => {
-                const hoveredToken = canvas.tokens._hover
+                const hoveredToken = canvas.tokens._hover;
                 if (hoveredToken !== null && !game.keyboard.isModifierActive(KeyboardManager.MODIFIER_KEYS.ALT)) {
                     canvas.hud.imageHover.showToAll(hoveredToken);                          // apply to self
-                    game.socket.emit("module.image-hover", hoveredToken.id)                 // emit to all other users
+                    game.socket.emit("module.image-hover", hoveredToken.id);                // emit to all other users
                 }
             },
             reservedModifiers: ["ALT"]
@@ -52,7 +52,7 @@ export class Settings {
 
         // Game master setting
         game.settings.register("image-hover", "showArtTimer", {
-            name: "Time spent showing everyone art",                             // Setting name
+            name: "Time spent showing everyone art",                         // Setting name
             hint: "Time (miliseconds) that art appears to users on the same scene when the \"show all\" keybind is pressed.",     // Setting description
             restricted: true,       // Game master only   
             scope: "world",         // Global setting
@@ -68,22 +68,22 @@ export class Settings {
 
         // client setting
         game.settings.register("image-hover", "userEnableModule", {
-            name: "Enable/Disable Image Hover",                               // Setting name
-            hint: "Uncheck to disable Image Hover (per user).",               // Setting description
+            name: "Enable/Disable Image Hover",                              // Setting name
+            hint: "Uncheck to disable Image Hover (per user).",              // Setting description
             scope: "client",      // client-stored setting
             config: true,         // Show setting in configuration view
             type: Boolean,        // Value type
             default: true,        // The default value for the setting
-            onChange: value => { canvas.hud.imageHover.clear()}
+            onChange: value => { canvas.hud.imageHover.clear();}
         });
 
         // client setting
         game.keybindings.register("image-hover", "userKeybindButton", {
             name: "Assign a keybind requirement to show art while hovering over a token.",                               // Setting name
-            hint: "Dont use Alt key, it won't work.",               // Setting description
+            hint: "Dont use Alt key, it won't work.",                       // Setting description
             editable:[],
             onDown: () => {
-                const hoveredToken = canvas.tokens._hover
+                const hoveredToken = canvas.tokens._hover;
                 if (hoveredToken !== null) {
                     canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true, 0);
                 }
@@ -93,7 +93,7 @@ export class Settings {
         
         // client setting
         game.settings.register("image-hover", "userImagePosition", {
-            name: "Position of image",                                                                    // Setting name
+            name: "Position of image",                                            // Setting name
             hint: "Set the location of the image on the screen (per user).",      // Setting description
             scope: "client",          // Client-stored setting
             config: true,             // Show setting in configuration view
@@ -110,7 +110,7 @@ export class Settings {
 
         // client setting
         game.settings.register("image-hover", "userImageSize", {
-            name: "Image to monitor width",                                    // Setting name
+            name: "Image to monitor width",                                       // Setting name
             hint: "Changes the size of the image (per user), smaller value implies larger image (1/value of your screen width).",     // Setting description
             scope: "client",        // Client-stored setting
             config: true,           // Show setting in configuration view
@@ -125,8 +125,8 @@ export class Settings {
 
         // client setting
         game.settings.register("image-hover", "userHoverDelay", {
-            name: "Mouse hover time requirement",                            // Setting name
-            hint: "Required hover time to show art work (miliseconds).",     // Setting description
+            name: "Mouse hover time requirement",                               // Setting name
+            hint: "Required hover time to show art work (miliseconds).",        // Setting description
             scope: "client",        // Client-stored setting
             config: true,           // Show setting in configuration view
             range: {                // Choices

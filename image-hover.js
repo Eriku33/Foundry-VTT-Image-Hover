@@ -13,7 +13,7 @@ let DEFAULT_TOKEN = "icons/svg/mystery-man.svg";                    // default t
 let showSpecificArt = false;                                        // track when to show/hide art when GM uses keybind to show art.
 let showArtTimer = 6000;                                            // Time (miliseconds) spent showing art when GM decides to "showSpecificArt" to everyone.
 
-let chatPortraitActive = false                                      // chat portrait incompatability check
+let chatPortraitActive = false;                                     // chat portrait incompatability check
 
 
 /**
@@ -22,7 +22,9 @@ let chatPortraitActive = false                                      // chat port
 const imageFileExtentions = ["jpg", "jpeg", "png", "svg", "webp"];  // image file extentions
 const videoFileExtentions = ["mp4", "ogg", "webm", "m4v"];          // video file extentions
 
-let cacheImageNames = new Object();                                 // url file names cache
+let cacheImageNames = {};                                           // url file names cache
+let timer;                                                          // Timer to reset setTimeout to show all users art. 
+
 
 /**
  * Assign module settings
@@ -33,12 +35,15 @@ function registerModuleSettings() {
     imageSizeSetting = game.settings.get('image-hover', 'userImageSize');
     imagePositionSetting = game.settings.get('image-hover', 'userImagePosition');
     imageHoverArt = game.settings.get('image-hover', 'artType');
-    imageHoverDelay = game.settings.get('image-hover', 'userHoverDelay')
-    showArtTimer =game.settings.get("image-hover", 'showArtTimer')
-    chatPortraitActive = game.modules.get("chat-portrait")?.active      // Undefined if module not installed)
+    imageHoverDelay = game.settings.get('image-hover', 'userHoverDelay');
+    showArtTimer =game.settings.get("image-hover", 'showArtTimer');
+    chatPortraitActive = game.modules.get("chat-portrait")?.active;      // Undefined if module not installed)
 
-};
+}
 
+/**
+ * Add socket to trigger all users to show art.
+ */
 function registerShowArtSocket() {
     game.socket.on("module.image-hover", (tokenID) => {
         const token = canvas.tokens.get(tokenID);
@@ -46,10 +51,12 @@ function registerShowArtSocket() {
     });
 }
 
+
 /**
  * Copy Placeable HUD template
  */
 class ImageHoverHUD extends BasePlaceableHUD {
+
 
     /**
      * Retrieve and override default options for BasePlaceableHUD
@@ -62,7 +69,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
             resizable: true,
 	        template: "modules/image-hover/templates/image-hover-template.html" // HTML template
         });
-    };
+    }
 
     /**
      * Get image data for html template
@@ -70,7 +77,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
     getData() {
         const data = super.getData();
         const tokenObject = this.object;
-        let image = tokenObject.actor.img                                   // Character art
+        let image = tokenObject.actor.img;                                   // Character art
         const isWildcard = tokenObject.actor.data.token.randomImg;
         const isLinkedActor = tokenObject.data.actorLink;
         /**
@@ -79,11 +86,11 @@ class ImageHoverHUD extends BasePlaceableHUD {
 	    if (image == DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard) || (imageHoverArt == "linked" && !isLinkedActor)) {
 		    image = tokenObject.data.img;                                   // Token art
         }
-        data.url = image
-        const fileExt = this.fileExtention(image)
-        if (videoFileExtentions.includes(fileExt)) data.isVideo = true      // if the file is not a image, we want to use the video html tag
+        data.url = image;
+        const fileExt = this.fileExtention(image);
+        if (videoFileExtentions.includes(fileExt)) data.isVideo = true;      // if the file is not a image, we want to use the video html tag
         return data;
-    };
+    }
 
     /**
      * Attempts to get the file extention of the string input
@@ -94,7 +101,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
         const endOfFile = file.lastIndexOf('.') + 1;
         if (endOfFile !== undefined) fileExt = file.substring(endOfFile).toLowerCase();
     
-        return fileExt
+        return fileExt;
     }
 
     /**
@@ -103,7 +110,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
     setPosition() {
         if (!this.object) return;
         this.updatePosition();
-    };
+    }
 
     /**
      * While hovering over a token and zooming or moving screen position, we want to reposition the image and scale it.
@@ -114,14 +121,14 @@ class ImageHoverHUD extends BasePlaceableHUD {
         const isLinkedActor = this.object.data.actorLink;
         if (url == DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard) || (imageHoverArt == "linked" && !isLinkedActor)) {                                                 // If no character art exists, use token art instead.
 		    url = this.object.data.img;                                             // Token art
-        };
+        }
 
         if (url in cacheImageNames) {
-            this.applyToCanvas(url)
+            this.applyToCanvas(url);
         } else {                                                                    // This only happens when you change a image on the canvas.
-            this.cacheAvailableToken(url, true)
+            this.cacheAvailableToken(url, true);
         }
-    };
+    }
 
     /**
      * Preload the url to find the width and height.
@@ -131,7 +138,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
     loadSourceDimensions(url) {
         return new Promise(resolve => {
 
-            const fileExt = this.fileExtention(url)
+            const fileExt = this.fileExtention(url);
 
             if (videoFileExtentions.includes(fileExt)) {
                 const video = document.createElement('video');                  // create the video element
@@ -152,9 +159,9 @@ class ImageHoverHUD extends BasePlaceableHUD {
                     });
                 });
                 img.src = url;
-            };
+            }
         });
-    };
+    }
 
     /** 
      * Add image to cache and show on canvas
@@ -166,11 +173,11 @@ class ImageHoverHUD extends BasePlaceableHUD {
             cacheImageNames[url] = {
                 'width': width,
                 'height': height
-            }
+            };
             if (applyToScreen) {
-                this.applyToCanvas(url)
+                this.applyToCanvas(url);
             }
-        })
+        });
     }
 
     /**
@@ -207,23 +214,23 @@ class ImageHoverHUD extends BasePlaceableHUD {
         if (imageHeightScaled > windowHeightScaled){                            // Height of image bigger than window height
             imageWidthScaled = (windowHeightScaled/imageHeightScaled) * imageWidthScaled;
             imageHeightScaled = windowHeightScaled;
-        };
+        }
 
         if (imagePositionSetting.includes('Bottom')){                           // move image to bottom of canvas
             yAxis = centre.y + windowHeightScaled/2  - imageHeightScaled;   
         }
         else {
             yAxis = centre.y - windowHeightScaled/2;
-        };
+        }
 
         const sidebar = document.getElementById('sidebar');
         const sidebarCollapsed = sidebar.classList.contains("collapsed");       // take into account if sidebar is collapsed
 
         if(imagePositionSetting == "Centre"){
             if (sidebarCollapsed){
-                return [centre.x-imageWidthScaled/2, centre.y-imageHeightScaled/2, imageWidthScaled]
+                return [centre.x-imageWidthScaled/2, centre.y-imageHeightScaled/2, imageWidthScaled];
             } else {
-                return [centre.x-imageWidthScaled/2 - (sidebar.offsetWidth/centre.scale)/3, centre.y-imageHeightScaled/2, imageWidthScaled]
+                return [centre.x-imageWidthScaled/2 - (sidebar.offsetWidth/centre.scale)/3, centre.y-imageHeightScaled/2, imageWidthScaled];
             }
         }
 
@@ -236,10 +243,10 @@ class ImageHoverHUD extends BasePlaceableHUD {
                 xAxis = centre.x + windowWidthScaled/2 - imageWidthScaled - sidebarWidthScaled;
             }
         } else {
-            xAxis = centre.x - windowWidthScaled/2
+            xAxis = centre.x - windowWidthScaled/2;
         }
         return [xAxis, yAxis, imageWidthScaled];
-    };
+    }
 
     /**
      * check requirements then show character art
@@ -269,8 +276,8 @@ class ImageHoverHUD extends BasePlaceableHUD {
         if (chatPortraitActive && !game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key && !game.keybindings.bindings.get("image-hover.showAllKey")[0]?.key){
             if (event){
 
-                var x = event.clientX
-                var y = event.clientY
+                var x = event.clientX;
+                var y = event.clientY;
                 var elementMouseIsOver = document.elementFromPoint(x, y);                       // element where mouse is
                 if (elementMouseIsOver.classList.contains("message-portrait") ||elementMouseIsOver.classList.contains("chat-message") ){
                     return;
@@ -279,7 +286,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
         } 
 
         /**
-         * Do not show new art or hide current art if Gm has triggerd the "showToAll" option for n seconds.
+         * Do not show new art or hide current art if GM has triggerd the "showToAll" option for "showArtTimer" seconds.
          */
         if (showSpecificArt) {
             return;
@@ -290,12 +297,12 @@ class ImageHoverHUD extends BasePlaceableHUD {
                 if (token == canvas.tokens._hover && token.actor.img == canvas.tokens._hover.actor.img) {
                     canvas.hud.imageHover.bind(token);
                 } else {
-                    canvas.hud.imageHover.clear()
+                    canvas.hud.imageHover.clear();
                 }
             }, delay);
         } else {
             this.clear();
-        };
+        }
     }
 
     /**
@@ -307,15 +314,16 @@ class ImageHoverHUD extends BasePlaceableHUD {
      */
     showToAll(token) {
         if (token && imageHoverActive) {
-            showSpecificArt = true;
+            showSpecificArt = true;                                     // condition to keep art on screen
             canvas.hud.imageHover.bind(token);
-            setTimeout(function() {
+            clearTimeout(timer);                                        //reset timer if key is pressed again
+            timer = setTimeout(function() {
                 showSpecificArt = false;
                 canvas.hud.imageHover.clear();
-            }, showArtTimer);
+            }, showArtTimer);                                           //after set amount of time, clear image
         }
     }
-};
+}
 
 /**
  * Add Image Hover display to html on load.
@@ -329,13 +337,13 @@ Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
     /**
      * renderHeadsUpDisplay is called when changing scene, use this to cache token images on the scene.
      */
-    canvas.hud.imageHover.cacheAvailableToken(DEFAULT_TOKEN, false)
+    canvas.hud.imageHover.cacheAvailableToken(DEFAULT_TOKEN, false);
     for (const token of canvas.tokens.placeables){
         if (!token || !token.actor) return;
         if (!(token.actor.img in cacheImageNames)) {
-            canvas.hud.imageHover.cacheAvailableToken(token.actor.img, false)
+            canvas.hud.imageHover.cacheAvailableToken(token.actor.img, false);
         } else if (token.actor.img === DEFAULT_TOKEN) {
-            canvas.hud.imageHover.cacheAvailableToken(token.data.img, false)
+            canvas.hud.imageHover.cacheAvailableToken(token.data.img, false);
         }
     }
 });
@@ -350,9 +358,9 @@ Hooks.on("createToken", (scene, data) => {
     let imageToCache = tokenId.img;
     if (imageToCache === DEFAULT_TOKEN) {
         imageToCache = data.img;
-    };
+    }
     if (imageToCache && !(imageToCache in cacheImageNames)) {
-        canvas.hud.imageHover.cacheAvailableToken(imageToCache, false)
+        canvas.hud.imageHover.cacheAvailableToken(imageToCache, false);
     }
 });
 
@@ -376,7 +384,7 @@ Hooks.on('hoverToken', (token, hovered) => {
      * Check no keybind requirement set.
      */
     if (!game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key) {
-        canvas.hud.imageHover.showArtworkRequirements(token, hovered, imageHoverDelay)
+        canvas.hud.imageHover.showArtworkRequirements(token, hovered, imageHoverDelay);
     }
 });
 
@@ -396,23 +404,32 @@ const renderHoverSetting = async (app, html, data) => {
         const contents = await renderTemplate('modules/image-hover/templates/image-hover-token-config.html', data); 
         nav.append(contents);
         app.setPosition({ height: 'auto' });
-    };
+    }
 
 };
 Hooks.on("renderTokenConfig", renderHoverSetting);
 
 /**
+ * Clear art unless GM is showing users art.
+ */
+ function clearArt() {
+    if (!showSpecificArt){
+        canvas.hud.imageHover.clear();
+    }
+}
+
+/**
  * Remove character art when deleting/dragging token (Hover hook doesn't trigger while token movement animation is on).
  */
-Hooks.on("preUpdateToken", (...args) => canvas.hud.imageHover.clear());
-Hooks.on("deleteToken", (...args) => canvas.hud.imageHover.clear());
+Hooks.on("preUpdateToken", (...args) => clearArt());
+Hooks.on("deleteToken", (...args) => clearArt());
 
 /**
  * Occasions to remove character art from screen due to weird hover hook interaction.
  */
-Hooks.on("closeActorSheet", (...args) => canvas.hud.imageHover.clear());
-Hooks.on("closeSettingsConfig", (...args) => canvas.hud.imageHover.clear());
-Hooks.on("closeApplication", (...args) => canvas.hud.imageHover.clear());
+Hooks.on("closeActorSheet", (...args) => clearArt());
+Hooks.on("closeSettingsConfig", (...args) => clearArt());
+Hooks.on("closeApplication", (...args) => clearArt());
 
 /**
  * When user scrolls/moves the screen position, we want to relocate the image.
@@ -423,7 +440,7 @@ Hooks.on("canvasPan", (...args) => {
             return;
         }
         canvas.hud.imageHover.updatePosition();
-    };
+    }
 });
 
 /**
