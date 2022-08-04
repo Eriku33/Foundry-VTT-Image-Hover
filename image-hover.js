@@ -3,17 +3,17 @@ import { Settings } from './settings.js';
 /**
  * Default settings
  */
-let actorRequirementSetting = "None";                               // required actor premission to see character art
+let actorRequirementSetting = "None";                               // required actor permission to see character art
 let imageHoverActive = true;                                        // Enable/Disable module
 let imagePositionSetting = "Bottom left";                           // location of character art
 let imageSizeSetting = 7;                                           // size of character art
 let imageHoverArt = "character";                                    // Art type on hover (Character art or Token art)
-let imageHoverDelay = 0;                                            // Hover time requirement (miliseconds)
+let imageHoverDelay = 0;                                            // Hover time requirement (milliseconds)
 let DEFAULT_TOKEN = "icons/svg/mystery-man.svg";                    // default token for foundry vtt
 let showSpecificArt = false;                                        // track when to show/hide art when GM uses keybind to show art.
-let showArtTimer = 6000;                                            // Time (miliseconds) spent showing art when GM decides to "showSpecificArt" to everyone.
+let showArtTimer = 6000;                                            // Time (milliseconds) spent showing art when GM decides to "showSpecificArt" to everyone.
 
-let chatPortraitActive = false;                                     // chat portrait incompatability check
+let chatPortraitActive = false;                                     // chat portrait incompatibility check
 
 
 /**
@@ -252,7 +252,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
      * check requirements then show character art
      * @param {*} token token passed in
      * @param {Boolean} hovered if token is mouseovered
-     * @param {Number} delay hover time requirement (miliseconds) to show art.
+     * @param {Number} delay hover time requirement (milliseconds) to show art.
      */
     showArtworkRequirements(token, hovered, delay) {
 
@@ -273,14 +273,18 @@ class ImageHoverHUD extends BasePlaceableHUD {
         /**
          * Do not show art for chat portrait module (hover hook doesn't trigger out properly).
          */
-        if (chatPortraitActive && !game.keybindings.bindings.get("image-hover.userKeybindButton")[0]?.key && !game.keybindings.bindings.get("image-hover.showAllKey")[0]?.key){
+        if (chatPortraitActive) {    
             if (event){
-
                 var x = event.clientX;
                 var y = event.clientY;
-                var elementMouseIsOver = document.elementFromPoint(x, y);                       // element where mouse is
-                if (elementMouseIsOver.classList.contains("message-portrait") ||elementMouseIsOver.classList.contains("chat-message") ){
-                    return;
+                if (x && y) {
+                    var elementMouseIsOver = document.elementFromPoint(x, y);                       // element where mouse is
+                    if (elementMouseIsOver.classList.contains("message-portrait") || elementMouseIsOver.classList.contains("chat-message") ){
+                        return;
+                    }
+                    if (elementMouseIsOver.classList.value && elementMouseIsOver.classList.value.includes("chat-portrait")) {
+                        return;
+                    }
                 }
             }
         } 

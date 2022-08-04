@@ -53,7 +53,7 @@ export class Settings {
         // Game master setting
         game.settings.register("image-hover", "showArtTimer", {
             name: "Time spent showing everyone art",                         // Setting name
-            hint: "Time (miliseconds) that art appears to users on the same scene when the \"show all\" keybind is pressed.",     // Setting description
+            hint: "Time (milliseconds) that art appears to users on the same scene when the \"show all\" keybind is pressed.",     // Setting description
             restricted: true,       // Game master only   
             scope: "world",         // Global setting
             config: true,           // Show setting in configuration view
@@ -126,7 +126,7 @@ export class Settings {
         // client setting
         game.settings.register("image-hover", "userHoverDelay", {
             name: "Mouse hover time requirement",                               // Setting name
-            hint: "Required hover time to show art work (miliseconds).",        // Setting description
+            hint: "Required hover time to show art work (milliseconds).",        // Setting description
             scope: "client",        // Client-stored setting
             config: true,           // Show setting in configuration view
             range: {                // Choices
