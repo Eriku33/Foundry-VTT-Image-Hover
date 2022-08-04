@@ -52,7 +52,7 @@ export class Settings {
 
         // Game master setting
         game.settings.register("image-hover", "showArtTimer", {
-            name: "Time spent showing everyone art",                         // Setting name
+            name: "Show all users art duration",                            // Setting name
             hint: "Time (milliseconds) that art appears to users on the same scene when the \"show all\" keybind is pressed.",     // Setting description
             restricted: true,       // Game master only   
             scope: "world",         // Global setting
