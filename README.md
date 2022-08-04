@@ -32,10 +32,10 @@ Default: Character art
 ##### Token art - Token art only.
 ##### Token art if wildcard - Token art if actor is wildcard(random image), otherwise character art.
 ##### Token art if unlinked - Character art for linked tokens only, otherwise token art.
-### Show all users art duration
+### Show all users art duration (Game master only)
 The time (milliseconds) art is shown to all users when the "show all users art" key bind is pressed when hovering over a token.<br>
 User must be on the same scene and have Image Hover enabled.<br>
-The required actor permission will be bypassed.<br>
+The required actor permissions and hide art for specific token will be ignored.<br>
 Default: 6000 (6 seconds).
 ### Enable/Disable Image Hover
 Each user can disable the module.<br>
@@ -49,7 +49,7 @@ Default: 7 - Image will take up <sup>1</sup>&frasl;<sub>7</sub>th of your screen
 ### Hover delay 
 Each user can add a hover time (milliseconds) requirement before image shows up.<br>
 Default: 0.
-## Set a keybind to show all users art
+## Set a keybind to show all users art (Game master only)
 Game masters can set a key bind to show all other users artwork.<br>
 Users must be on the same scene and have Image Hover enabled.<br>
 The duration that this art appears can be changed in the game masters module settings.
