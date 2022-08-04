@@ -39,14 +39,14 @@ The required actor permissions and hide art for specific token will be ignored.<
 Default: 6000 (6 seconds).
 ### Enable/Disable Image Hover
 Each user can disable the module.<br>
-Default: On
+Default: Enabled
 ### Position of Image
 Each user can relocate the character art to a different corner of the screen (Bottom left/right , Top left/right and Centre)<br>
 Default: Bottom Left
 ### Image to monitor width
 Each user can configure the size of the image based on the width of their monitor.<br>
 Default: 7 - Image will take up <sup>1</sup>&frasl;<sub>7</sub>th of your screen.
-### Hover delay 
+### Mouse hover time requirement
 Each user can add a hover time (milliseconds) requirement before image shows up.<br>
 Default: 0.
 ## Set a keybind to show all users art (Game master only)
@@ -54,8 +54,8 @@ Game masters can set a key bind to show all other users artwork.<br>
 Users must be on the same scene and have Image Hover enabled.<br>
 The duration that this art appears can be changed in the game masters module settings.
 ## Set a keybind requirement while hovering a token
-If a keybind is set in Game settings -> Configure controls, that key will be required to be pressed while hovering 
-over a token to see the art (Hover delay will be set to 0).<br>
+If a keybind is set in Game settings -> Configure controls,<br> that key will be required to be pressed while hovering 
+over a token to see the art (Mouse hover time requirement will be set to 0).<br>
 If no keybind is set, art will be shown on token hover.
 
 ## Hide art for specific token (Game master only)
