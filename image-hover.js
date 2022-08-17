@@ -80,12 +80,22 @@ class ImageHoverHUD extends BasePlaceableHUD {
         let image = tokenObject.actor.img;                                   // Character art
         const isWildcard = tokenObject.actor.data.token.randomImg;
         const isLinkedActor = tokenObject.data.actorLink;
+
         /**
          * Don't use character art if it doesn't exist or settings are applied.
          */
 	    if (image == DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard) || (imageHoverArt == "linked" && !isLinkedActor)) {
 		    image = tokenObject.data.img;                                   // Token art
         }
+        
+        /**
+         * Check for show specific art option on token.
+         */
+        const specificArtSelected = tokenObject.document.getFlag('image-hover', 'specificArt');
+        if (specificArtSelected && specificArtSelected != "path/image.png") {
+            image = specificArtSelected;
+        }
+
         data.url = image;
         const fileExt = this.fileExtention(image);
         if (videoFileExtentions.includes(fileExt)) data.isVideo = true;      // if the file is not a image, we want to use the video html tag
@@ -121,6 +131,14 @@ class ImageHoverHUD extends BasePlaceableHUD {
         const isLinkedActor = this.object.data.actorLink;
         if (url == DEFAULT_TOKEN || imageHoverArt === "token" || (imageHoverArt === "wildcard" && isWildcard) || (imageHoverArt == "linked" && !isLinkedActor)) {                                                 // If no character art exists, use token art instead.
 		    url = this.object.data.img;                                             // Token art
+        }
+
+        /**
+         * Check for show specific art option on token and apply correct size.
+         */
+        const specificArtSelected = this.object.document.getFlag('image-hover', 'specificArt')
+        if (specificArtSelected && specificArtSelected != "path/image.png") {
+            url = specificArtSelected;
         }
 
         if (url in cacheImageNames) {
@@ -393,23 +411,35 @@ Hooks.on('hoverToken', (token, hovered) => {
 });
 
 /**
- * Add checkbox option in token configuration to hide image art to all.
- * Only Game masters can change this setting.
+ * Add extra settings for game masters in the token configuration.
+ * A checkbox option to hide image art to all.
+ * A file picker to show a specific file for that token on hover.
  */
 const renderHoverSetting = async (app, html, data) => {
     /**
-     * Create image hover flag and apply to checkbox in the new created token configuration.
-     * Update flag as token is updated.
+     * Create flags and apply to token configuration html.
+     * Ensure flag is updated on "update" and correct value is shown when changed.
      */
     if (data.isGM) {
         let hideImageStatus = app.token.getFlag('image-hover', 'hideArt') ? "checked": "";
-        const nav = html.find(`div[data-tab="appearance"]`);
+        let specificImageStatus = app.token.getFlag('image-hover', 'specificArt') ? app.token.getFlag('image-hover', 'specificArt') : "path/image.png";
+
         data.hideHoverStatus = hideImageStatus;
+        data.specificHoverStatus = specificImageStatus;
+        
+        const nav = html.find(`div[data-tab="appearance"]`);
         const contents = await renderTemplate('modules/image-hover/templates/image-hover-token-config.html', data); 
         nav.append(contents);
         app.setPosition({ height: 'auto' });
-    }
 
+        html.find("button.my-picker-button").click(async () => {
+            new FilePicker({
+                type: "imagevideo",
+                callback: async (path) => {
+                  html.find("input.specific-image").val(path);
+            }}).render();
+        }) 
+    }
 };
 Hooks.on("renderTokenConfig", renderHoverSetting);
 
