@@ -425,18 +425,18 @@ const renderHoverSetting = async (app, html, data) => {
         let specificImageStatus = app.token.getFlag('image-hover', 'specificArt') ? app.token.getFlag('image-hover', 'specificArt') : "path/image.png";
 
         data.hideHoverStatus = hideImageStatus;
-        data.specificHoverStatus = specificImageStatus;
+        data.specificArtStatus = specificImageStatus;
         
         const nav = html.find(`div[data-tab="appearance"]`);
         const contents = await renderTemplate('modules/image-hover/templates/image-hover-token-config.html', data); 
         nav.append(contents);
         app.setPosition({ height: 'auto' });
 
-        html.find("button.my-picker-button").click(async () => {
+        html.find("button.image-hover-picker-button").click(async () => {
             new FilePicker({
                 type: "imagevideo",
                 callback: async (path) => {
-                  html.find("input.specific-image").val(path);
+                  html.find("input.specific-image-hover").val(path);
             }}).render();
         }) 
     }
