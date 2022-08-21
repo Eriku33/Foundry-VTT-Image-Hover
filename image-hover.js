@@ -14,6 +14,7 @@ let showSpecificArt = false;                                        // track whe
 let showArtTimer = 6000;                                            // Time (milliseconds) spent showing art when GM decides to "showSpecificArt" to everyone.
 
 let chatPortraitActive = false;                                     // chat portrait incompatibility check
+let mouseDownCounter = 0;
 
 
 /**
@@ -51,6 +52,18 @@ function registerShowArtSocket() {
     });
 }
 
+/**
+ * Register callbacks to keep track of mouse-down state. This is used to
+ * prevent showing the ImageHoverHUD when a token is momentarily hovered
+ * and then dragged, or dragged outside of the viewport.
+ */
+function registerMouseDownCallbacks() {
+    window.onblur = () => { mouseDownCounter = 0; }
+    document.body.onmouseleave = () => { mouseDownCounter = 0; }
+    document.body.onmouseenter = () => { mouseDownCounter = 0; }
+    document.body.onmousedown = () => { ++mouseDownCounter; }
+    document.body.onmouseup = () => { --mouseDownCounter; }
+}
 
 /**
  * Copy Placeable HUD template
@@ -316,7 +329,10 @@ class ImageHoverHUD extends BasePlaceableHUD {
 
         if (hovered && (canvas.activeLayer.name == 'TokenLayer' || canvas.activeLayer.name == 'TokenLayerPF2e')) {       // Show token image if hovered, otherwise don't
             setTimeout(function() {
-                if (token == canvas.tokens._hover && token.actor.img == canvas.tokens._hover.actor.img) {
+                if (token == canvas.tokens._hover &&
+                    token.actor.img == canvas.tokens._hover.actor.img &&
+                    mouseDownCounter <= 0
+                ) {
                     canvas.hud.imageHover.bind(token);
                 } else {
                     canvas.hud.imageHover.clear();
@@ -484,6 +500,7 @@ Hooks.on("init", function() {
     Settings.createSettings();
     registerModuleSettings();
     registerShowArtSocket();
+    registerMouseDownCallbacks();
 });
 
 Hooks.on("closeSettingsConfig", function() {
