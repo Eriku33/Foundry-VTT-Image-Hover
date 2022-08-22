@@ -4,7 +4,7 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 2.0.5
+* **Version**: 2.0.6
 * **Foundry VTT Compatibility**: 9+ (Release 1.1.8 is compatible with previous versions of Foundry VTT)
 * **System Compatibility**: dnd5e and most others but have not checked.
 ## Installation
@@ -58,6 +58,14 @@ If a keybind is set in Game settings -> Configure controls,<br> that key will be
 over a token to see the art (Mouse hover time requirement will be set to 0).<br>
 If no keybind is set, art will be shown on token hover.
 
-## Hide art for specific token (Game master only)
-If Hide Image Hover Art checkbox is ticked, art will not be shown to anyone on hover.<br>
-![image-hover-settings-example](pics/image-hover-token-setting.gif)
+## Token Configuration Settings
+![image-hover-settings-example](pics/image-hover-token-config.PNG)
+
+### Hide image hover art (Game master only)
+If Hide Image Hover Art checkbox is checked, art will not be shown to anyone on hover for that token.<br>
+Default: Unchecked
+### Specific image on hover (Game master only)
+Use the file picker to select a specific image/video to show when users hover over the token.<br>
+Defaults to image set on Art on Hover setting.<br>
+Delete the text to remove image and revert to default.<br>
+Default: Unset (path/image.png)
