@@ -41,7 +41,7 @@ export class Settings {
             restricted: true,
             editable:[],
             onDown: () => {
-                const hoveredToken = canvas.tokens._hover;
+                const hoveredToken = canvas.tokens.hover;
                 if (hoveredToken !== null && !game.keyboard.isModifierActive(KeyboardManager.MODIFIER_KEYS.ALT)) {
                     canvas.hud.imageHover.showToAll(hoveredToken);                          // apply to self
                     game.socket.emit("module.image-hover", hoveredToken.id);                // emit to all other users
@@ -83,7 +83,7 @@ export class Settings {
             hint: "Dont use Alt key, it won't work.",                       // Setting description
             editable:[],
             onDown: () => {
-                const hoveredToken = canvas.tokens._hover;
+                const hoveredToken = canvas.tokens.hover;
                 if (hoveredToken !== null) {
                     canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true, 0);
                 }
