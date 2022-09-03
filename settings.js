@@ -37,17 +37,15 @@ export class Settings {
         // Game master setting
         game.keybindings.register("image-hover", "showAllKey", {
             name: "Assign a keybind to show all users art.",                // Setting name
-            hint: "Dont use Alt key, it won't work.",                       // Setting description
             restricted: true,
             editable:[],
             onDown: () => {
                 const hoveredToken = canvas.tokens.hover;
-                if (hoveredToken !== null && !game.keyboard.isModifierActive(KeyboardManager.MODIFIER_KEYS.ALT)) {
+                if (hoveredToken !== null) {
                     canvas.hud.imageHover.showToAll(hoveredToken);                          // apply to self
                     game.socket.emit("module.image-hover", hoveredToken.id);                // emit to all other users
                 }
-            },
-            reservedModifiers: ["ALT"]
+            }
         });
 
         // Game master setting
@@ -80,7 +78,6 @@ export class Settings {
         // client setting
         game.keybindings.register("image-hover", "userKeybindButton", {
             name: "Assign a keybind requirement to show art while hovering over a token.",                               // Setting name
-            hint: "Dont use Alt key, it won't work.",                       // Setting description
             editable:[],
             onDown: () => {
                 const hoveredToken = canvas.tokens.hover;
@@ -88,7 +85,6 @@ export class Settings {
                     canvas.hud.imageHover.showArtworkRequirements(hoveredToken, true, 0);
                 }
             },
-            reservedModifiers: ["ALT"]
         });
         
         // client setting
