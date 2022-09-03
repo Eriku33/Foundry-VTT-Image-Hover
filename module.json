@@ -2,9 +2,12 @@
     "name": "image-hover",
     "title": "Image Hover",
     "description": "This module allows users to see the character art while hovering over a token.",
+    "author": "Eriku",
     "authors": [
       {
-      "name": "Eriku"
+      "name": "Eriku",
+      "discord": "Eriku#2108",
+      "url": "https://github.com/Eriku33"
       }
       ],
     "version": "3.0.0",
