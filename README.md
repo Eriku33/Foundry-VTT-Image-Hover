@@ -4,9 +4,12 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 2.0.6
-* **Foundry VTT Compatibility**: 9+ (Release 1.1.8 is compatible with previous versions of Foundry VTT)
-* **System Compatibility**: dnd5e and most others but have not checked.
+* **Version**: 3.0.0
+* **Foundry VTT Compatibility**:
+  - Foundry v10 - Latest release.
+  - Foundry v9 - 2.0.6.
+  - Before Foundry v9 - 1.1.8.
+* **System Compatibility**: All systems.
 ## Installation
 To install, search for Image Hover in the module list or follow these instructions:
 
