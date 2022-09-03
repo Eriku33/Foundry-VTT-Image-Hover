@@ -287,9 +287,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
         /**
          * check flag to hide art for everyone
          */
-        if (token.document.getFlag('image-hover', 'hideArt')){
-            return;
-        }
+        if (token.document.getFlag('image-hover', 'hideArt')) return;
 
         /**
          * Do not show art for chat portrait module (hover hook doesn't trigger out properly).
@@ -311,11 +309,14 @@ class ImageHoverHUD extends BasePlaceableHUD {
         } 
 
         /**
+         * Hide art when dragging a token.
+         */
+        if (event && event.buttons > 0) return;
+
+        /**
          * Do not show new art or hide current art if GM has triggerd the "showToAll" option for "showArtTimer" seconds.
          */
-        if (showSpecificArt) {
-            return;
-        }
+        if (showSpecificArt) return;
 
         if (hovered && (canvas.activeLayer.name == 'TokenLayer' || canvas.activeLayer.name == 'TokenLayerPF2e')) {       // Show token image if hovered, otherwise don't
             setTimeout(function() {
@@ -397,10 +398,8 @@ Hooks.on("createToken", (token, options, userId) => {
  */
 Hooks.on('hoverToken', (token, hovered) => {
 
-    if (showSpecificArt) {
-        return;
-    }
-    if (!hovered || (game.keyboard.isModifierActive(KeyboardManager.MODIFIER_KEYS.ALT))) {	// alt key in Foundry auto hovers all tokens in Foundry
+    if (showSpecificArt) return;
+    if (!hovered) {
         canvas.hud.imageHover.clear();
         return;
     }
