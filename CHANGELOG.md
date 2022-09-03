@@ -1,8 +1,10 @@
 # Version history
 
-## Version 3.0.0 (to be released)
+## Version 3.0.0
 
 - Foundry v10 compatibility!
+- Alt key can now be used as a key binding.
+- Dragging/Moving tokens now hides art on screen.
 
 ## Version 2.0.6
 
