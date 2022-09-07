@@ -1,4 +1,4 @@
-![Foundry VTT](https://img.shields.io/badge/Foundry-v9-informational)
+![Foundry VTT](https://img.shields.io/badge/Foundry-Version10-informational)
 ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Fimage-hover&colorB=4aa94a)
 ![The Latest Version Downloads](https://img.shields.io/badge/dynamic/json?label=Latest%20version%20users&query=$[0].assets[?(@.name.includes(%27.zip%27))].download_count&url=https%3A%2F%2Fapi.github.com%2Frepos%2FEriku33%2FFoundry-VTT-Image-Hover%2Freleases)
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
