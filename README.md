@@ -4,7 +4,7 @@
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
 * **Author**: Eriku#2108 (Discord)
-* **Version**: 3.0.0
+* **Version**: 3.0.1
 * **Foundry VTT Compatibility**:
   - Foundry v10 - Latest release.
   - Foundry v9 - 2.0.6.
