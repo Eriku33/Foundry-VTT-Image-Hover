@@ -1,5 +1,11 @@
 # Version history
 
+## Version 3.0.1
+
+- Refactor file
+- Update module json to new release
+- Undefined error handling
+
 ## Version 3.0.0
 
 - Foundry v10 compatibility!
