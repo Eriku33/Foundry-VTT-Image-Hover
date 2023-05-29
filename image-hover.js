@@ -464,7 +464,7 @@ Hooks.on("createToken", (token, options, userId) => {
  * @param {Boolean} hovered if token is mouseovered
  */
 Hooks.on("hoverToken", (token, hovered) => {
-  if (showSpecificArt) return;
+  if (showSpecificArt || canvas.hud.imageHover === undefined) return;
   if (!hovered) {
     canvas.hud.imageHover.clear();
     return;
