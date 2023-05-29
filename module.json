@@ -1,28 +1,26 @@
 {
-    "name": "image-hover",
-    "title": "Image Hover",
-    "description": "This module allows users to see the character art while hovering over a token.",
-    "author": "Eriku",
-    "authors": [
-      {
+  "name": "image-hover",
+  "title": "Image Hover",
+  "description": "This module allows users to see the character art while hovering over a token.",
+  "author": "Eriku",
+  "authors": [
+    {
       "name": "Eriku",
       "discord": "Eriku#2108",
       "url": "https://github.com/Eriku33"
-      }
-      ],
-    "version": "3.0.1",
-    "compatibility": {
-      "minimum": "10",
-      "verified": "10.291"
-    },
-    "socket": true,
-    "esmodules": [
-        "image-hover.js"
-    ],
-    "url": "https://github.com/Eriku33/Foundry-VTT-Image-Hover",
-    "manifest": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/3.0.1/module.json",
-    "download": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/3.0.1/module.zip",
-    "readme": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/blob/main/README.md",
-    "bugs": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/issues",
-    "changelog": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/blob/main/CHANGELOG.md"
+    }
+  ],
+  "version": "3.0.2",
+  "compatibility": {
+    "minimum": "10",
+    "verified": "10.291"
+  },
+  "socket": true,
+  "esmodules": ["image-hover.js"],
+  "url": "https://github.com/Eriku33/Foundry-VTT-Image-Hover",
+  "manifest": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/3.0.2/module.json",
+  "download": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/3.0.2/module.zip",
+  "readme": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/blob/main/README.md",
+  "bugs": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/issues",
+  "changelog": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/blob/main/CHANGELOG.md"
 }
