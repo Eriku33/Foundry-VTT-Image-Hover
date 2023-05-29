@@ -1,5 +1,9 @@
 # Version history
 
+## Version 3.0.2
+
+- Minor bug fix
+
 ## Version 3.0.1
 
 - Refactor file
