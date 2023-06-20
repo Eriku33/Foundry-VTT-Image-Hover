@@ -3,7 +3,8 @@
 ![The Latest Version Downloads](https://img.shields.io/badge/dynamic/json?label=Latest%20version%20users&query=$[0].assets[?(@.name.includes(%27.zip%27))].download_count&url=https%3A%2F%2Fapi.github.com%2Frepos%2FEriku33%2FFoundry-VTT-Image-Hover%2Freleases)
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
-* **Author**: Eriku#2108 (Discord)
+* **Author**: eric_lam#0000 (Discord)
+* **Email**: ericlam3388@gmail.com
 * **Version**: 3.0.1
 * **Foundry VTT Compatibility**:
   - Foundry v10 - Latest release.
