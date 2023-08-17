@@ -1,21 +1,19 @@
-![Foundry VTT](https://img.shields.io/badge/Foundry-Version10-informational)
+![Foundry VTT](https://img.shields.io/badge/Foundry-Version11-informational)
 ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Fimage-hover&colorB=4aa94a)
 ![The Latest Version Downloads](https://img.shields.io/badge/dynamic/json?label=Latest%20version%20users&query=$[0].assets[?(@.name.includes(%27.zip%27))].download_count&url=https%3A%2F%2Fapi.github.com%2Frepos%2FEriku33%2FFoundry-VTT-Image-Hover%2Freleases)
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
-* **Author**: eric_lam#0000 (Discord)
+* **Author**: eric_lam (Discord)
 * **Email**: ericlam3388@gmail.com
-* **Version**: 3.0.1
+* **Version**: 3.0.3
 * **Foundry VTT Compatibility**:
-  - Foundry v10 - Latest release.
+  - Foundry v11 - Latest release.
+  - Foundry v10 - 3.0.2.
   - Foundry v9 - 2.0.6.
   - Before Foundry v9 - 1.1.8.
 * **System Compatibility**: All systems.
 ## Installation
-To install, search for Image Hover in the module list or follow these instructions:
-
-1.  Inside Foundry, select the Game Modules tab in the Configuration and Setup menu.
-2.  Click the Install Module button and enter the following URL:<br>https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/latest/download/module.json.
+To install, search for Image Hover in the module list.
 
 ## Description
 A module built on top of the Foundry Virtual Tabletop API that allows users to hover over actor tokens and see the character art.
