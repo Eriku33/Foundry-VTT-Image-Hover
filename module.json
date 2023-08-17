@@ -1,5 +1,5 @@
 {
-  "name": "image-hover",
+  "id": "image-hover",
   "title": "Image Hover",
   "description": "This module allows users to see the character art while hovering over a token.",
   "author": "Eriku",
