@@ -6,20 +6,20 @@
   "authors": [
     {
       "name": "Eriku",
-      "discord": "Eriku#2108",
+      "discord": "eric_lam",
       "url": "https://github.com/Eriku33"
     }
   ],
-  "version": "3.0.2",
+  "version": "3.0.3",
   "compatibility": {
     "minimum": "10",
-    "verified": "10.291"
+    "verified": "11.307"
   },
   "socket": true,
   "esmodules": ["image-hover.js"],
   "url": "https://github.com/Eriku33/Foundry-VTT-Image-Hover",
-  "manifest": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/3.0.2/module.json",
-  "download": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/3.0.2/module.zip",
+  "manifest": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/3.0.3/module.json",
+  "download": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/releases/download/3.0.3/module.zip",
   "readme": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/blob/main/README.md",
   "bugs": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/issues",
   "changelog": "https://github.com/Eriku33/Foundry-VTT-Image-Hover/blob/main/CHANGELOG.md"
