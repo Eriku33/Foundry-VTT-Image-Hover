@@ -12,7 +12,7 @@
   ],
   "version": "3.0.3",
   "compatibility": {
-    "minimum": "10",
+    "minimum": "11",
     "verified": "11.307"
   },
   "socket": true,
