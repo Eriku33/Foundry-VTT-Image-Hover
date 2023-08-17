@@ -1,5 +1,9 @@
 # Version history
 
+## Version 3.0.3
+
+- Update to be Foundry v11 compatible
+
 ## Version 3.0.2
 
 - Minor bug fix
