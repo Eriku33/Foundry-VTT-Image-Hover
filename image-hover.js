@@ -377,6 +377,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
 
     if (
       hovered &&
+      canvas.activeLayer &&
       (canvas.activeLayer.name == "TokenLayer" ||
         canvas.activeLayer.name == "TokenLayerPF2e")
     ) {
