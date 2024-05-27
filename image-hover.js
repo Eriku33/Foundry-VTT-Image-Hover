@@ -59,7 +59,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
    * Retrieve and override default options for BasePlaceableHUD
    */
   static get defaultOptions() {
-    return mergeObject(super.defaultOptions, {
+    return foundry.utils.mergeObject(super.defaultOptions, {
       id: "image-hover-hud",
       classes: [...super.defaultOptions.classes, "image-hover-hud"],
       minimizable: false,
