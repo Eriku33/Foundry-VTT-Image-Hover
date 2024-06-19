@@ -135,7 +135,18 @@ class ImageHoverHUD extends BasePlaceableHUD {
     let url = this.object.actor.img; // Character art
     const isWildcard = this.object.actor.prototypeToken.randomImg;
     const isLinkedActor = this.object.document.actorLink;
-    if (
+
+    /**
+     * Check for show specific art option on token.
+     */
+    const specificArtSelected = this.object.document.getFlag(
+      "image-hover",
+      "specificArt"
+    );
+
+    if (specificArtSelected && specificArtSelected != "path/image.png") {
+      url = specificArtSelected;
+    } else if (
       url == DEFAULT_TOKEN ||
       imageHoverArt === "token" ||
       (imageHoverArt === "wildcard" && isWildcard) ||
@@ -143,22 +154,11 @@ class ImageHoverHUD extends BasePlaceableHUD {
     ) {
       // If no character art exists, use token art instead.
       if (this.object.document.texture.src == DEFAULT_TOKEN) {
+        canvas.hud.imageHover.clear();
         return;
       }
       url = this.object.document.texture.src; // Token art
     }
-
-    /**
-     * Check for show specific art option on token and apply correct size.
-     */
-    const specificArtSelected = this.object.document.getFlag(
-      "image-hover",
-      "specificArt"
-    );
-    if (specificArtSelected && specificArtSelected != "path/image.png") {
-      url = specificArtSelected;
-    }
-
     if (url in cacheImageNames) {
       this.applyToCanvas(url);
     } else {
