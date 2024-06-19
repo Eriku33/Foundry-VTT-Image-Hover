@@ -5,9 +5,10 @@
 
 * **Author**: eric_lam (Discord)
 * **Email**: ericlam3388@gmail.com
-* **Version**: 3.0.3
+* **Version**: 3.0.4
 * **Foundry VTT Compatibility**:
-  - Foundry v11 - Latest release.
+  - Foundry v12 - latest release.
+  - Foundry v11 - 3.0.3.
   - Foundry v10 - 3.0.2.
   - Foundry v9 - 2.0.6.
   - Before Foundry v9 - 1.1.8.
@@ -32,24 +33,24 @@ Choose the type of artwork shown for tokens when hovered.<br>
 Default: Character art
 ##### Character art - Character art when possible.
 ##### Token art - Token art only.
-##### Token art if wildcard - Token art if actor is wildcard(random image), otherwise character art.
+##### Token art if wildcard - Token art if an actor is a wildcard(random image), otherwise character art.
 ##### Token art if unlinked - Character art for linked tokens only, otherwise token art.
 ### Show all users art duration (Game master only)
 The time (milliseconds) art is shown to all users when the "show all users art" key bind is pressed when hovering over a token.<br>
-User must be on the same scene and have Image Hover enabled.<br>
+The user must be on the same scene and have Image Hover enabled.<br>
 The required actor permissions and hide art for specific token will be ignored.<br>
 Default: 6000 (6 seconds).
 ### Enable/Disable Image Hover
 Each user can disable the module.<br>
 Default: Enabled
 ### Position of Image
-Each user can relocate the character art to a different corner of the screen (Bottom left/right , Top left/right and Centre)<br>
+Each user can relocate the character art to a different corner of the screen (Bottom left/right, Top left/right and Centre)<br>
 Default: Bottom Left
 ### Image to monitor width
 Each user can configure the size of the image based on the width of their monitor.<br>
 Default: 7 - Image will take up <sup>1</sup>&frasl;<sub>7</sub>th of your screen.
 ### Mouse hover time requirement
-Each user can add a hover time (milliseconds) requirement before image shows up.<br>
+Each user can add a hover time (milliseconds) requirement before the image shows up.<br>
 Default: 0.
 ## Set a keybind to show all users art (Game master only)
 Game masters can set a key bind to show all other users artwork.<br>
@@ -69,5 +70,5 @@ Default: Unchecked
 ### Specific image on hover (Game master only)
 Use the file picker to select a specific image/video to show when users hover over the token.<br>
 Defaults to image set on Art on Hover setting.<br>
-Delete the text to remove image and revert to default.<br>
+Delete the text to remove the image and revert to default.<br>
 Default: Unset (path/image.png)
