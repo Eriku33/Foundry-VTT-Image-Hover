@@ -1,5 +1,9 @@
 # Version history
 
+## NEXT
+
+- Add option to never show image for tokens which have a detectionFilter applied to them (this works for the "imprecise" sense in PF2E).
+
 ## Version 3.0.3
 
 - Update to be Foundry v11 compatible
