@@ -1,8 +1,16 @@
 # Version history
 
-## NEXT
+## Version 3.0.5
 
-- Add option to never show image for tokens which have a detectionFilter applied to them (this works for the "imprecise" sense in PF2E).
+- Hides art for tokens with imprecise vision.
+  -  Invisible.
+  -  Blindness condition.
+  -  Can hear but not see visually.
+
+## Version 3.0.4
+
+- Update to be Foundry v12 compatible.
+- Fixed unexpected art appearances.
 
 ## Version 3.0.3
 
