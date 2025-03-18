@@ -343,7 +343,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
     /**
      * option to never show image of a token subject to filtering (e.g. imprecise vision on PF2E)
      */
-    if (game.settings.get("image-hover", "onlyNoDetection") && token.detectionFilter) return;
+    if (token.detectionFilter) return;
 
     /**
      * Do not show art for chat portrait module (hover hook doesn't trigger out properly).

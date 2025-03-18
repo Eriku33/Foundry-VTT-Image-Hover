@@ -141,17 +141,5 @@ export class Settings {
       default: 0, // Default Value
       type: Number, // Value type
     });
-
-    // client setting
-    game.settings.register("image-hover", "onlyNoDetection", {
-      name: "Only Token with no detection filter", // Setting name
-      hint: "Only show Images with no detection filter on them (such as 'imprecise' sense on Pathfinder 2E)", // Setting description
-      scope: "world", // client-stored setting
-      config: true, // Show setting in configuration view
-      type: Boolean, // Value type
-      default: true // The default value for the setting
-    });
-
-
   }
 }
