@@ -33,7 +33,7 @@ function registerModuleSettings() {
     "image-hover",
     "permissionOnHover"
   );
-  NameRequirementSetting = game.settings.get("Image-Hover","NamePermission")
+  NameRequirementSetting = game.settings.get("image-hover","NamePermission")
   imageHoverActive = game.settings.get("image-hover", "userEnableModule");
   imageSizeSetting = game.settings.get("image-hover", "userImageSize");
   imagePositionSetting = game.settings.get("image-hover", "userImagePosition");
@@ -230,7 +230,6 @@ class ImageHoverHUD extends BasePlaceableHUD {
    * @param {String} url Url of the image/video to get dimensions from.
    */
   applyToCanvas(url) {
-    console.log("test")
     const imageWidth = cacheImageNames[url].width; //width of original image
     const imageHeight = cacheImageNames[url].height+50; //height of original image
     const [xAxis, yAxis, imageWidthScaled, fontSize] = this.changePosition(
@@ -242,9 +241,13 @@ class ImageHoverHUD extends BasePlaceableHUD {
       width: imageWidthScaled,
       left: xAxis,
       top: yAxis,
-      fontSize: fontSize
+      fontSize: 1// changes the size of the  <--> image below the image
     };
+
+    console.log("[DEBUG] ", this.element)
+
     this.element.css(position); // Apply CSS to element
+    this.element.children().first().css({fontSize: fontSize})// sets the text size of the token name
   }
 
   /**
