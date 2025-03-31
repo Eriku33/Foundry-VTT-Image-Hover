@@ -1,4 +1,7 @@
-<div id="{{id}}" class="{{classes}}">
+<div id="{{id}}" class="{{classes}}" style="border-width: medium; font-size: 1;">
+	{{#if showName}}
+	<div>{{name}}</div>
+	{{/if}}
 	{{#if isVideo}}
 		<video src="{{url}}" autoplay loop style="width:100%; border:0px"></video>
 	{{else}}

@@ -4,6 +4,7 @@ import { Settings } from "./settings.js";
  * Default settings
  */
 let actorRequirementSetting = "None"; // required actor permission to see character art
+let NameRequirementSetting = 0; // required actor permission to see chartacter name
 let imageHoverActive = true; // Enable/Disable module
 let imagePositionSetting = "Bottom left"; // location of character art
 let imageSizeSetting = 7; // size of character art
@@ -32,6 +33,7 @@ function registerModuleSettings() {
     "image-hover",
     "permissionOnHover"
   );
+  NameRequirementSetting = game.settings.get("image-hover","NamePermission")
   imageHoverActive = game.settings.get("image-hover", "userEnableModule");
   imageSizeSetting = game.settings.get("image-hover", "userImageSize");
   imagePositionSetting = game.settings.get("image-hover", "userImagePosition");
@@ -104,6 +106,10 @@ class ImageHoverHUD extends BasePlaceableHUD {
     data.url = image;
     const fileExt = this.fileExtention(image);
     if (videoFileExtentions.includes(fileExt)) data.isVideo = true; // if the file is not a image, we want to use the video html tag
+
+    data.classes = "app "
+    data.showName = NameRequirementSetting <= tokenObject.actor.permission
+
     return data;
   }
 
@@ -225,8 +231,8 @@ class ImageHoverHUD extends BasePlaceableHUD {
    */
   applyToCanvas(url) {
     const imageWidth = cacheImageNames[url].width; //width of original image
-    const imageHeight = cacheImageNames[url].height; //height of original image
-    const [xAxis, yAxis, imageWidthScaled] = this.changePosition(
+    const imageHeight = cacheImageNames[url].height+50; //height of original image
+    const [xAxis, yAxis, imageWidthScaled, fontSize] = this.changePosition(
       imageWidth,
       imageHeight
     ); // move image to correct verticle position.
@@ -235,8 +241,13 @@ class ImageHoverHUD extends BasePlaceableHUD {
       width: imageWidthScaled,
       left: xAxis,
       top: yAxis,
+      fontSize: 1// changes the size of the  <--> image below the image
     };
+
+    console.log("[DEBUG] ", this.element)
+
     this.element.css(position); // Apply CSS to element
+    this.element.children().first().css({fontSize: fontSize})// sets the text size of the token name
   }
 
   /**
@@ -252,6 +263,9 @@ class ImageHoverHUD extends BasePlaceableHUD {
     let imageHeightScaled = imageWidthScaled * (imageHeight / imageWidth); // Scaled height from width
     const windowWidthScaled = window.innerWidth / centre.scale;
     const windowHeightScaled = window.innerHeight / centre.scale;
+
+    let fontSize = 34.8/centre.scale //Calculate font size of image
+
     let xAxis = 0;
     let yAxis = 0;
 
@@ -312,7 +326,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
     } else {
       xAxis = centre.x - windowWidthScaled / 2;
     }
-    return [xAxis, yAxis, imageWidthScaled];
+    return [xAxis, yAxis, imageWidthScaled, fontSize];
   }
 
   /**
