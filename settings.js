@@ -2,8 +2,8 @@ export class Settings {
   static createSettings() {
     // Game master setting
     game.settings.register("image-hover", "permissionOnHover", {
-      name: "Required actor permission", // Setting name
-      hint: "Required permission level of Actor to see handout.", // Setting description
+      name: "Required actor permission(Image)", // Setting name
+      hint: "Required permission level of Actor to see Image.", // Setting description
       scope: "world", // Global setting
       config: true, // Show setting in configuration view
       restricted: true, // Game master only
@@ -17,6 +17,25 @@ export class Settings {
       default: "0", // Default value
       type: Number, // Value type
     });
+    
+    // Game master setting
+    game.settings.register("image-hover", "NamePermission", {
+      name: "Required actor permission(Name)", // Setting name
+      hint: "Required permission level of Actor to see Name.", // Setting description
+      scope: "world", // Global setting
+      config: true, // Show setting in configuration view
+      restricted: true, // Game master only
+      choices: {
+        // Choices
+        0: "None",
+        1: "Limited",
+        2: "Observer",
+        3: "Owner",
+      },
+      default: "0", // Default value
+      type: Number, // Value type
+    });
+
 
     // Game master setting
     game.settings.register("image-hover", "artType", {
