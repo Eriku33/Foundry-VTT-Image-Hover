@@ -54,7 +54,7 @@ function registerShowArtSocket() {
 /**
  * Copy Placeable HUD template
  */
-class ImageHoverHUD extends BasePlaceableHUD {
+class ImageHoverHUD extends foundry.applications.hud.BasePlaceableHUD {
   /**
    * Retrieve and override default options for BasePlaceableHUD
    */
