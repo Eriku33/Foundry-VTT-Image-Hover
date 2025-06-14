@@ -390,7 +390,6 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(foundry.applications.hud.
           token == canvas.tokens.hover &&
           token.actor.img == canvas.tokens.hover.actor.img
         ) {
-          console.log(token)
           canvas.hud.imageHover.bind(token);
         } else {
           canvas.hud.imageHover.close();
