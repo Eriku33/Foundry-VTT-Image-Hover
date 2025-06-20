@@ -1,4 +1,5 @@
 import { Settings } from "./settings.js";
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 
 /**
  * Default settings
@@ -54,25 +55,26 @@ function registerShowArtSocket() {
 /**
  * Copy Placeable HUD template
  */
-class ImageHoverHUD extends BasePlaceableHUD {
-  /**
-   * Retrieve and override default options for BasePlaceableHUD
-   */
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: "image-hover-hud",
-      classes: [...super.defaultOptions.classes, "image-hover-hud"],
-      minimizable: false,
-      resizable: true,
-      template: "modules/image-hover/templates/image-hover-template.html", // HTML template
-    });
+class ImageHoverHUD extends HandlebarsApplicationMixin(foundry.applications.hud.BasePlaceableHUD) {
+  static DEFAULT_OPTIONS = {
+    ...super.DEFAULT_OPTIONS,
+    classes: ['image-hover-hud'],
+    window: {
+      resizable: true
+    }
+  }
+
+  static PARTS = {
+    body: {
+      template: "modules/image-hover/templates/image-hover-template.html"
+    }
   }
 
   /**
    * Get image data for html template
    */
-  getData() {
-    const data = super.getData();
+  async _prepareContext () {
+    const data = await super._prepareContext()
     const tokenObject = this.object;
     let image = tokenObject.actor.img; // Character art
     const isWildcard = tokenObject.actor.prototypeToken.randomImg;
@@ -154,7 +156,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
     ) {
       // If no character art exists, use token art instead.
       if (this.object.document.texture.src == DEFAULT_TOKEN) {
-        canvas.hud.imageHover.clear();
+        canvas.hud.imageHover.close();
         return;
       }
       url = this.object.document.texture.src; // Token art
@@ -230,13 +232,11 @@ class ImageHoverHUD extends BasePlaceableHUD {
       imageWidth,
       imageHeight
     ); // move image to correct verticle position.
-    const position = {
-      // CSS
-      width: imageWidthScaled,
-      left: xAxis,
-      top: yAxis,
-    };
-    this.element.css(position); // Apply CSS to element
+
+    // Apply CSS to element
+    this.element.style.width = `${imageWidthScaled}px`
+    this.element.style.left = `${xAxis}px`
+    this.element.style.top = `${yAxis}px`
   }
 
   /**
@@ -382,8 +382,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
 
     if (
       hovered &&
-      (canvas.activeLayer.name == "TokenLayer" ||
-        canvas.activeLayer.name == "TokenLayerPF2e")
+      (canvas.activeLayer instanceof foundry.canvas.layers.TokenLayer)
     ) {
       // Show token image if hovered, otherwise don't
       setTimeout(function () {
@@ -393,11 +392,11 @@ class ImageHoverHUD extends BasePlaceableHUD {
         ) {
           canvas.hud.imageHover.bind(token);
         } else {
-          canvas.hud.imageHover.clear();
+          canvas.hud.imageHover.close();
         }
       }, delay);
     } else {
-      this.clear();
+      this.close();
     }
   }
 
@@ -415,7 +414,7 @@ class ImageHoverHUD extends BasePlaceableHUD {
       clearTimeout(timer); //reset timer if key is pressed again
       timer = setTimeout(function () {
         showSpecificArt = false;
-        canvas.hud.imageHover.clear();
+        canvas.hud.imageHover.close();
       }, showArtTimer); //after set amount of time, clear image
     }
   }
@@ -424,9 +423,11 @@ class ImageHoverHUD extends BasePlaceableHUD {
 /**
  * Add Image Hover display to html on load.
  */
-Hooks.on("renderHeadsUpDisplay", (app, html, data) => {
-  html[0].style.zIndex = 70;
-  html.append(`<template id="image-hover-hud"></template>`);
+Hooks.on("renderHeadsUpDisplayContainer", (app, html, data) => {
+  html.style.zIndex = 70;
+  const template = document.createElement('template');
+  template.id = 'image-hover-hud';
+  html.appendChild(template)
   canvas.hud.imageHover = new ImageHoverHUD();
 
   /**
@@ -471,7 +472,7 @@ Hooks.on("createToken", (token, options, userId) => {
 Hooks.on("hoverToken", (token, hovered) => {
   if (showSpecificArt || canvas.hud.imageHover === undefined) return;
   if (!hovered) {
-    canvas.hud.imageHover.clear();
+    canvas.hud.imageHover.close();
     return;
   }
 
@@ -498,32 +499,46 @@ const renderHoverSetting = async (app, html, data) => {
    * Ensure flag is updated on "update" and correct value is shown when changed.
    */
   if (data.isGM) {
-    let hideImageStatus = app.token.getFlag("image-hover", "hideArt")
-      ? "checked"
-      : "";
-    let specificImageStatus = app.token.getFlag("image-hover", "specificArt")
-      ? app.token.getFlag("image-hover", "specificArt")
-      : "path/image.png";
+    const token = app.token;
+
+    const hideImageStatus = (await token.getFlag('image-hover', 'hideArt')) ? 'checked' : '';
+    const specificImageStatus = (await token.getFlag('image-hover', 'specificArt')) || 'path/image.png';
 
     data.hideHoverStatus = hideImageStatus;
     data.specificArtStatus = specificImageStatus;
 
-    const nav = html.find(`div[data-tab="appearance"]`);
+    // Convert html to native DOM element if it's a jQuery object
+    const rootEl = html instanceof jQuery ? html[0] : html;
+
+    // Find the tab content container
+    const nav = rootEl.querySelector('div[data-tab="appearance"]');
     const contents = await renderTemplate(
-      "modules/image-hover/templates/image-hover-token-config.html",
+      'modules/image-hover/templates/image-hover-token-config.html',
       data
     );
-    nav.append(contents);
-    app.setPosition({ height: "auto" });
 
-    html.find("button.image-hover-picker-button").click(async () => {
-      new FilePicker({
-        type: "imagevideo",
-        callback: async (path) => {
-          html.find("input.specific-image-hover").val(path);
-        },
-      }).render();
-    });
+    // contents is assumed to be HTML string, so parse it
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = contents;
+    while (wrapper.firstChild) {
+      nav.appendChild(wrapper.firstChild);
+    }
+
+    app.setPosition({ height: 'auto' });
+
+    // Attach click handler for the image picker button
+    const pickerButton = rootEl.querySelector('button.image-hover-picker-button');
+    if (pickerButton) {
+      pickerButton.addEventListener('click', async () => {
+        new FilePicker({
+          type: 'imagevideo',
+          callback: async (path) => {
+            const input = rootEl.querySelector('input.specific-image-hover');
+            if (input) input.value = path;
+          },
+        }).render();
+      });
+    }
   }
 };
 Hooks.on("renderTokenConfig", renderHoverSetting);
@@ -533,7 +548,7 @@ Hooks.on("renderTokenConfig", renderHoverSetting);
  */
 function clearArt() {
   if (!showSpecificArt && canvas.hud.imageHover) {
-    canvas.hud.imageHover.clear();
+    canvas.hud.imageHover.close();
   }
 }
 

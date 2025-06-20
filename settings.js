@@ -76,7 +76,7 @@ export class Settings {
       type: Boolean, // Value type
       default: true, // The default value for the setting
       onChange: (value) => {
-        canvas.hud.imageHover.clear();
+        canvas.hud.imageHover.close();
       },
     });
 
