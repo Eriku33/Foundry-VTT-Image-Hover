@@ -1,5 +1,5 @@
 import { Settings } from "./settings.js";
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
  * Default settings
@@ -55,26 +55,28 @@ function registerShowArtSocket() {
 /**
  * Copy Placeable HUD template
  */
-class ImageHoverHUD extends HandlebarsApplicationMixin(foundry.applications.hud.BasePlaceableHUD) {
+class ImageHoverHUD extends HandlebarsApplicationMixin(
+  foundry.applications.hud.BasePlaceableHUD
+) {
   static DEFAULT_OPTIONS = {
     ...super.DEFAULT_OPTIONS,
-    classes: ['image-hover-hud'],
+    classes: ["image-hover-hud"],
     window: {
-      resizable: true
-    }
-  }
+      resizable: true,
+    },
+  };
 
   static PARTS = {
     body: {
-      template: "modules/image-hover/templates/image-hover-template.html"
-    }
-  }
+      template: "modules/image-hover/templates/image-hover-template.html",
+    },
+  };
 
   /**
    * Get image data for html template
    */
-  async _prepareContext () {
-    const data = await super._prepareContext()
+  async _prepareContext() {
+    const data = await super._prepareContext();
     const tokenObject = this.object;
     let image = tokenObject.actor.img; // Character art
     const isWildcard = tokenObject.actor.prototypeToken.randomImg;
@@ -234,9 +236,9 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(foundry.applications.hud.
     ); // move image to correct verticle position.
 
     // Apply CSS to element
-    this.element.style.width = `${imageWidthScaled}px`
-    this.element.style.left = `${xAxis}px`
-    this.element.style.top = `${yAxis}px`
+    this.element.style.width = `${imageWidthScaled}px`;
+    this.element.style.left = `${xAxis}px`;
+    this.element.style.top = `${yAxis}px`;
   }
 
   /**
@@ -343,7 +345,7 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(foundry.applications.hud.
     /**
      * option to never show image of a token subject to filtering (e.g. imprecise vision on PF2E)
      */
-    if (token.detectionFilter) return;
+    if (token.detectionFilter && !game.user.isGM) return;
 
     /**
      * Do not show art for chat portrait module (hover hook doesn't trigger out properly).
@@ -382,7 +384,7 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(foundry.applications.hud.
 
     if (
       hovered &&
-      (canvas.activeLayer instanceof foundry.canvas.layers.TokenLayer)
+      canvas.activeLayer instanceof foundry.canvas.layers.TokenLayer
     ) {
       // Show token image if hovered, otherwise don't
       setTimeout(function () {
@@ -425,9 +427,9 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(foundry.applications.hud.
  */
 Hooks.on("renderHeadsUpDisplayContainer", (app, html, data) => {
   html.style.zIndex = 70;
-  const template = document.createElement('template');
-  template.id = 'image-hover-hud';
-  html.appendChild(template)
+  const template = document.createElement("template");
+  template.id = "image-hover-hud";
+  html.appendChild(template);
   canvas.hud.imageHover = new ImageHoverHUD();
 
   /**
@@ -501,8 +503,11 @@ const renderHoverSetting = async (app, html, data) => {
   if (data.isGM) {
     const token = app.token;
 
-    const hideImageStatus = (await token.getFlag('image-hover', 'hideArt')) ? 'checked' : '';
-    const specificImageStatus = (await token.getFlag('image-hover', 'specificArt')) || 'path/image.png';
+    const hideImageStatus = (await token.getFlag("image-hover", "hideArt"))
+      ? "checked"
+      : "";
+    const specificImageStatus =
+      (await token.getFlag("image-hover", "specificArt")) || "path/image.png";
 
     data.hideHoverStatus = hideImageStatus;
     data.specificArtStatus = specificImageStatus;
@@ -512,28 +517,30 @@ const renderHoverSetting = async (app, html, data) => {
 
     // Find the tab content container
     const nav = rootEl.querySelector('div[data-tab="appearance"]');
-    const contents = await renderTemplate(
-      'modules/image-hover/templates/image-hover-token-config.html',
+    const contents = await foundry.applications.handlebars.renderTemplate(
+      "modules/image-hover/templates/image-hover-token-config.html",
       data
     );
 
     // contents is assumed to be HTML string, so parse it
-    const wrapper = document.createElement('div');
+    const wrapper = document.createElement("div");
     wrapper.innerHTML = contents;
     while (wrapper.firstChild) {
       nav.appendChild(wrapper.firstChild);
     }
 
-    app.setPosition({ height: 'auto' });
+    app.setPosition({ height: "auto" });
 
     // Attach click handler for the image picker button
-    const pickerButton = rootEl.querySelector('button.image-hover-picker-button');
+    const pickerButton = rootEl.querySelector(
+      "button.image-hover-picker-button"
+    );
     if (pickerButton) {
-      pickerButton.addEventListener('click', async () => {
-        new FilePicker({
-          type: 'imagevideo',
+      pickerButton.addEventListener("click", async () => {
+        new foundry.applications.apps.FilePicker.implementation({
+          type: "imagevideo",
           callback: async (path) => {
-            const input = rootEl.querySelector('input.specific-image-hover');
+            const input = rootEl.querySelector("input.specific-image-hover");
             if (input) input.value = path;
           },
         }).render();
@@ -541,7 +548,7 @@ const renderHoverSetting = async (app, html, data) => {
     }
   }
 };
-Hooks.on("renderTokenConfig", renderHoverSetting);
+Hooks.on("renderTokenApplication", renderHoverSetting);
 
 /**
  * Clear art unless GM is showing users art.
