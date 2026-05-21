@@ -4,18 +4,26 @@
 ![The Latest Version Downloads](https://img.shields.io/github/downloads/eriku33/Foundry-VTT-Image-Hover/latest/module.zip?label=Latest%20Version%20downloads)
 # Image-Hover (https://foundryvtt.com/packages/image-hover/)
 
-* **Author**: eriku88 (Discord)
-* **Version**: 3.1
-* **Foundry VTT Compatibility**:
-  - Foundry v13 - latest release.
-  - Foundry v12 - 3.0.5.
-  - Foundry v11 - 3.0.3.
-  - Foundry v10 - 3.0.2.
-  - Foundry v9 - 2.0.6.
-  - Before Foundry v9 - 1.1.8.
-* **System Compatibility**: All systems.
-## Installation
-To install, search for `Image Hover` in the module list.
+Small fork of the main Image Hover to address issues, add a few features, and update to support Foundry v14.
+
+### Added The following features:
+- **Disable during comba settingt** (world/GM, off by default) — suppresses the popup while a combat encounter is active.
+- **Exclude tokens by tag** (world/GM) — An exclude filter to skip the image popup based on tags. (requires the tagger FoundryVTT Module)
+- **Popup graphic overlay** (per-user) — a decorative image (e.g. a frame) layered on the popup with associated positioning settings.
+
+### Fixed
+- `canvasPan` crash (`Cannot read properties of undefined (reading 'style')`) — repositioning now guards on render state.
+- Broken image/video URLs no longer hang forever — load failures are caught, cached, and logged once.
+- Rapid-hover race that closed/reopened the wrong token's art — the per-hover timer is now tracked and cleared.
+- Unbounded growth of the image dimension cache — it is now reset per scene.
+- Token-cache loop aborting early on the first actor-less token.
+- Null crash in the chat-portrait detection check.
+
+### Changed
+- Foundry v14 compatibility (v13 still supported): replaced the private `canvas.scene._viewPosition` with the live canvas transform, token-config hook uses `app.document` with an `app.token` fallback, manifest verified for v14.
+- World/GM settings now read fresh, so changes reach players immediately instead of going stale until a settings dialog is reopened.
+- Removed the non-standard global `event`; cursor and drag state are tracked via pointer listeners.
+- Internal cleanup: de-duplicated art-URL resolution, fixed naming/typos, removed dead and unused code, added defensive guards.
 
 ## Description
 A module built on top of the Foundry Virtual Tabletop API that allows users to hover over actor tokens and see the character art.

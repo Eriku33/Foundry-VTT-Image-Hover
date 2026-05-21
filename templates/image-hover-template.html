@@ -1,7 +1,10 @@
-<div id="{{id}}" class="{{classes}}">
+<div id="{{id}}" class="{{classes}}" style="position:relative">
 	{{#if isVideo}}
-		<video src="{{url}}" autoplay loop style="width:100%; border:0px"></video>
+		<video src="{{url}}" autoplay loop style="width:100%; border:0px{{#if overlayGraphic}}; transform:scale({{tokenImageScale}}); transform-origin:center{{/if}}"></video>
 	{{else}}
-		<img src="{{url}}" style="width:100%; border:0px"></img>
+		<img src="{{url}}" style="width:100%; border:0px{{#if overlayGraphic}}; transform:scale({{tokenImageScale}}); transform-origin:center{{/if}}"></img>
+	{{/if}}
+	{{#if overlayGraphic}}
+		<img class="image-hover-overlay-graphic" src="{{overlayGraphic}}" style="position:absolute; left:0; top:0; height:auto; visibility:hidden; z-index:{{overlayGraphicZ}}; pointer-events:none; border:0px"></img>
 	{{/if}}
 </div>

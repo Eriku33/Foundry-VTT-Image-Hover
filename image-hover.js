@@ -1,45 +1,134 @@
-import { Settings } from "./settings.js";
+import { Settings, sanitizeGraphicPath } from "./settings.js";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
- * Default settings
+ * Cached client settings. World-scoped GM settings are read fresh at point of
+ * use (see resolveArtUrl / showArtworkRequirements / showToAll) so changes
+ * propagate to every connected client immediately.
  */
-let actorRequirementSetting = "None"; // required actor permission to see character art
 let imageHoverActive = true; // Enable/Disable module
 let imagePositionSetting = "Bottom left"; // location of character art
 let imageSizeSetting = 7; // size of character art
-let imageHoverArt = "character"; // Art type on hover (Character art or Token art)
 let imageHoverDelay = 0; // Hover time requirement (milliseconds)
-let DEFAULT_TOKEN = "icons/svg/mystery-man.svg"; // default token for foundry vtt
 let showSpecificArt = false; // track when to show/hide art when GM uses keybind to show art.
-let showArtTimer = 6000; // Time (milliseconds) spent showing art when GM decides to "showSpecificArt" to everyone.
-
 let chatPortraitActive = false; // chat portrait incompatibility check
 
-/**
- * Supported Foundry VTT file types
- */
-const imageFileExtentions = ["jpg", "jpeg", "png", "svg", "webp"]; // image file extentions
-const videoFileExtentions = ["mp4", "ogg", "webm", "m4v"]; // video file extentions
+const DEFAULT_TOKEN = "icons/svg/mystery-man.svg"; // default token for foundry vtt
 
-let cacheImageNames = {}; // url file names cache
-let timer; // Timer to reset setTimeout to show all users art.
+/**
+ * Supported Foundry VTT video file types
+ */
+const videoFileExtensions = ["mp4", "ogg", "webm", "m4v"];
+
+let cacheImageNames = {}; // url -> {width,height} cache, or null for failed loads
+let timer; // Timer for the GM "show to all" auto-hide
+let hoverTimer; // Timer for the per-hover delayed show
+let lastPointerEvent = null; // most recent pointer event (cursor pos / buttons)
+let taggerErrorLogged = false; // ensures the Tagger failure warning logs only once
 
 /**
  * Assign module settings
  */
 function registerModuleSettings() {
-  actorRequirementSetting = game.settings.get(
-    "image-hover",
-    "permissionOnHover"
-  );
   imageHoverActive = game.settings.get("image-hover", "userEnableModule");
   imageSizeSetting = game.settings.get("image-hover", "userImageSize");
   imagePositionSetting = game.settings.get("image-hover", "userImagePosition");
-  imageHoverArt = game.settings.get("image-hover", "artType");
   imageHoverDelay = game.settings.get("image-hover", "userHoverDelay");
-  showArtTimer = game.settings.get("image-hover", "showArtTimer");
-  chatPortraitActive = game.modules.get("chat-portrait")?.active; // Undefined if module not installed)
+  chatPortraitActive = game.modules.get("chat-portrait")?.active; // Undefined if module not installed
+}
+
+/**
+ * Read the live canvas pan/zoom in a way that survives v14.
+ * v14 deprecates `canvas.scene._viewPosition`; the PIXI stage transform is the
+ * supported live source on both v13 and v14.
+ */
+function getCanvasView() {
+  const stage = canvas?.stage;
+  if (stage?.pivot && stage?.scale) {
+    return { x: stage.pivot.x, y: stage.pivot.y, scale: stage.scale.x };
+  }
+  return canvas?.scene?._viewPosition ?? { x: 0, y: 0, scale: 1 };
+}
+
+/**
+ * Parse the comma-separated excludeTags setting fresh each time so that GM
+ * changes propagate to every connected client without requiring them to
+ * reopen their own settings dialog.
+ */
+function getExcludedTags() {
+  const raw = game.settings.get("image-hover", "excludeTags") ?? "";
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+}
+
+/**
+ * Check whether a placeable (token or tile) carries any of the configured exclusion tags.
+ * Returns false when Tagger is not installed or no tags are configured.
+ */
+function hasExcludedTag(placeable) {
+  if (!placeable || !game.modules.get("tagger")?.active) return false;
+  const tags = getExcludedTags();
+  if (tags.length === 0) return false;
+  const Tagger = globalThis.Tagger;
+  if (!Tagger?.hasTags) return false;
+  try {
+    return Tagger.hasTags(placeable, tags, { matchAny: true });
+  } catch (e) {
+    if (!taggerErrorLogged) {
+      taggerErrorLogged = true;
+      console.warn(
+        "Image Hover: Tagger.hasTags threw — tag exclusion skipped for this object.",
+        e
+      );
+    }
+    return false;
+  }
+}
+
+/**
+ * Resolve which art URL to show for a token. Honors the per-token specific-art
+ * flag, then the configured art-type (read fresh so GM changes reach every
+ * client). Falls back to the token texture when no dedicated art applies.
+ * @param {Token} token canvas token placeable
+ * @return {String} image/video url
+ */
+function resolveArtUrl(token) {
+  const doc = token.document;
+  const specificArt = doc.getFlag("image-hover", "specificArt");
+  if (specificArt && specificArt != "path/image.png") return specificArt;
+
+  const artType = game.settings.get("image-hover", "artType");
+  const actorImg = token.actor.img;
+  const isWildcard = token.actor.prototypeToken.randomImg;
+  const isLinkedActor = doc.actorLink;
+  if (
+    actorImg == DEFAULT_TOKEN ||
+    artType === "token" ||
+    (artType === "wildcard" && isWildcard) ||
+    (artType == "linked" && !isLinkedActor)
+  ) {
+    return doc.texture.src; // Token art
+  }
+  return actorImg; // Character art
+}
+
+/**
+ * Resolve a graphic position/size setting to pixels. Accepts a "%" suffix or a
+ * bare number (percentage of `basis`), or a "px" suffix (absolute pixels).
+ * @param {String|Number} raw stored setting value
+ * @param {Number} basis popup dimension a percentage is relative to
+ * @returns {Number} value in pixels
+ */
+function resolveGraphicMetric(raw, basis) {
+  const s = String(raw ?? "").trim();
+  if (s === "") return 0;
+  const num = parseFloat(s);
+  if (!Number.isFinite(num)) return 0;
+  if (s.toLowerCase().endsWith("px")) return num; // absolute pixels
+  return (num / 100) * basis; // "%" suffix or bare number
 }
 
 /**
@@ -50,6 +139,20 @@ function registerShowArtSocket() {
     const token = canvas.tokens.get(tokenID);
     canvas.hud.imageHover.showToAll(token);
   });
+}
+
+/**
+ * Track the most recent pointer event so hover logic can read cursor position
+ * and button state without relying on the non-standard global `event`.
+ */
+for (const type of ["pointermove", "pointerdown", "pointerup"]) {
+  window.addEventListener(
+    type,
+    (e) => {
+      lastPointerEvent = e;
+    },
+    { capture: true, passive: true }
+  );
 }
 
 /**
@@ -77,51 +180,64 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
    */
   async _prepareContext() {
     const data = await super._prepareContext();
-    const tokenObject = this.object;
-    let image = tokenObject.actor.img; // Character art
-    const isWildcard = tokenObject.actor.prototypeToken.randomImg;
-    const isLinkedActor = tokenObject.document.actorLink;
-
-    /**
-     * Don't use character art if it doesn't exist or settings are applied.
-     */
-    if (
-      image == DEFAULT_TOKEN ||
-      imageHoverArt === "token" ||
-      (imageHoverArt === "wildcard" && isWildcard) ||
-      (imageHoverArt == "linked" && !isLinkedActor)
-    ) {
-      image = tokenObject.document.texture.src; // Token art
-    }
-
-    /**
-     * Check for show specific art option on token.
-     */
-    const specificArtSelected = tokenObject.document.getFlag(
-      "image-hover",
-      "specificArt"
-    );
-    if (specificArtSelected && specificArtSelected != "path/image.png") {
-      image = specificArtSelected;
-    }
-
+    const image = resolveArtUrl(this.object);
     data.url = image;
-    const fileExt = this.fileExtention(image);
-    if (videoFileExtentions.includes(fileExt)) data.isVideo = true; // if the file is not a image, we want to use the video html tag
+    const fileExt = this.fileExtension(image);
+    if (videoFileExtensions.includes(fileExt)) data.isVideo = true; // use the video html tag for non-image files
+
+    /**
+     * Optional decorative graphic layered on the popup. Sanitized again here as
+     * defense-in-depth in case the stored value bypassed the settings onChange.
+     * The size/position are applied in pixels by applyGraphicLayout so they
+     * stay relative to the popup; only the path and z-index are needed here.
+     */
+    const graphic = sanitizeGraphicPath(
+      game.settings.get("image-hover", "overlayGraphic")
+    );
+    if (graphic) {
+      data.overlayGraphic = graphic;
+      data.overlayGraphicZ = game.settings.get(
+        "image-hover",
+        "overlayGraphicZ"
+      );
+      // Token-art scale (as a fraction) so the art can be shrunk to sit inside
+      // a popup graphic frame. Only applied while a graphic is present.
+      const tokenScale = Number(
+        game.settings.get("image-hover", "tokenImageScale")
+      );
+      data.tokenImageScale = Number.isFinite(tokenScale)
+        ? tokenScale / 100
+        : 1;
+    }
     return data;
   }
 
   /**
-   * Attempts to get the file extention of the string input
+   * Attempts to get the file extension of the string input.
+   * Returns "png" when the path has no extension.
    * @param {String} file file path in folder
    */
-  fileExtention(file) {
-    let fileExt = "png"; // Assume art is a image by default
+  fileExtension(file) {
     const endOfFile = file.lastIndexOf(".") + 1;
-    if (endOfFile !== undefined)
-      fileExt = file.substring(endOfFile).toLowerCase();
+    if (endOfFile > 0) return file.substring(endOfFile).toLowerCase();
+    return "png"; // Assume art is an image by default
+  }
 
-    return fileExt;
+  /**
+   * After render, drop the overlay graphic if its file fails to load so a
+   * broken-image icon is never shown on the popup.
+   */
+  _onRender(context, options) {
+    super._onRender(context, options);
+    const graphic = this.element?.querySelector(
+      "img.image-hover-overlay-graphic"
+    );
+    if (!graphic) return;
+    if (graphic.complete && graphic.naturalWidth === 0) {
+      graphic.remove();
+      return;
+    }
+    graphic.addEventListener("error", () => graphic.remove(), { once: true });
   }
 
   /**
@@ -136,32 +252,13 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
    * While hovering over a token and zooming or moving screen position, we want to reposition the image and scale it.
    */
   updatePosition() {
-    let url = this.object.actor.img; // Character art
-    const isWildcard = this.object.actor.prototypeToken.randomImg;
-    const isLinkedActor = this.object.document.actorLink;
+    if (!this.rendered || !this.element || !this.object?.actor) return;
+    const url = resolveArtUrl(this.object);
 
-    /**
-     * Check for show specific art option on token.
-     */
-    const specificArtSelected = this.object.document.getFlag(
-      "image-hover",
-      "specificArt"
-    );
-
-    if (specificArtSelected && specificArtSelected != "path/image.png") {
-      url = specificArtSelected;
-    } else if (
-      url == DEFAULT_TOKEN ||
-      imageHoverArt === "token" ||
-      (imageHoverArt === "wildcard" && isWildcard) ||
-      (imageHoverArt == "linked" && !isLinkedActor)
-    ) {
-      // If no character art exists, use token art instead.
-      if (this.object.document.texture.src == DEFAULT_TOKEN) {
-        canvas.hud.imageHover.close();
-        return;
-      }
-      url = this.object.document.texture.src; // Token art
+    // No real art to show — only the default token texture.
+    if (url == DEFAULT_TOKEN) {
+      this.close();
+      return;
     }
     if (url in cacheImageNames) {
       this.applyToCanvas(url);
@@ -177,10 +274,10 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
    * @return {Promise} Promise which returns the dimensions of the image/video in 'width' and 'height' properties.
    */
   loadSourceDimensions(url) {
-    return new Promise((resolve) => {
-      const fileExt = this.fileExtention(url);
+    return new Promise((resolve, reject) => {
+      const fileExt = this.fileExtension(url);
 
-      if (videoFileExtentions.includes(fileExt)) {
+      if (videoFileExtensions.includes(fileExt)) {
         const video = document.createElement("video"); // create the video element
         video.addEventListener("loadedmetadata", function () {
           // place a listener on it
@@ -189,6 +286,9 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
             height: this.videoHeight,
           });
         });
+        video.addEventListener("error", () =>
+          reject(new Error(`Image Hover: failed to load video "${url}"`))
+        );
         video.src = url; // start download meta-data
       } else {
         const img = new Image();
@@ -199,6 +299,9 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
             height: this.height,
           });
         });
+        img.addEventListener("error", () =>
+          reject(new Error(`Image Hover: failed to load image "${url}"`))
+        );
         img.src = url;
       }
     });
@@ -210,16 +313,17 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
    * @param {Boolean} applyToScreen Apply image to screen or just cache image.
    */
   cacheAvailableToken(url, applyToScreen) {
-    canvas.hud.imageHover
-      .loadSourceDimensions(url)
+    this.loadSourceDimensions(url)
       .then(({ width, height }) => {
-        cacheImageNames[url] = {
-          width: width,
-          height: height,
-        };
+        cacheImageNames[url] = { width, height };
         if (applyToScreen) {
           this.applyToCanvas(url);
         }
+      })
+      .catch((err) => {
+        // Cache the failure so a broken url is not retried on every hover.
+        cacheImageNames[url] = null;
+        console.warn(err.message);
       });
   }
 
@@ -228,17 +332,54 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
    * @param {String} url Url of the image/video to get dimensions from.
    */
   applyToCanvas(url) {
-    const imageWidth = cacheImageNames[url].width; //width of original image
-    const imageHeight = cacheImageNames[url].height; //height of original image
+    const dimensions = cacheImageNames[url];
+    // Bail if the load failed (null) or the HUD has since been closed.
+    if (!dimensions || !this.element) return;
     const [xAxis, yAxis, imageWidthScaled] = this.changePosition(
-      imageWidth,
-      imageHeight
+      dimensions.width,
+      dimensions.height
     ); // move image to correct verticle position.
 
     // Apply CSS to element
     this.element.style.width = `${imageWidthScaled}px`;
     this.element.style.left = `${xAxis}px`;
     this.element.style.top = `${yAxis}px`;
+
+    // Size the overlay graphic from the popup dimensions so percentage values
+    // keep the same relative size at any zoom level / image-width setting.
+    const popupHeight =
+      imageWidthScaled * (dimensions.height / dimensions.width);
+    this.applyGraphicLayout(imageWidthScaled, popupHeight);
+  }
+
+  /**
+   * Size and position the optional overlay graphic in pixels, derived from the
+   * popup dimensions. Percentage settings stay relative to the popup; "px"
+   * settings are absolute. Height is left to the graphic's own aspect ratio.
+   * @param {Number} popupWidth rendered popup width in pixels
+   * @param {Number} popupHeight rendered popup height in pixels
+   */
+  applyGraphicLayout(popupWidth, popupHeight) {
+    const graphic = this.element?.querySelector(
+      "img.image-hover-overlay-graphic"
+    );
+    if (!graphic) return;
+    const width = resolveGraphicMetric(
+      game.settings.get("image-hover", "overlayGraphicScale"),
+      popupWidth
+    );
+    const left = resolveGraphicMetric(
+      game.settings.get("image-hover", "overlayGraphicX"),
+      popupWidth
+    );
+    const top = resolveGraphicMetric(
+      game.settings.get("image-hover", "overlayGraphicY"),
+      popupHeight
+    );
+    graphic.style.width = `${width}px`;
+    graphic.style.left = `${left}px`;
+    graphic.style.top = `${top}px`;
+    graphic.style.visibility = "visible";
   }
 
   /**
@@ -248,7 +389,7 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
    * @param {Number} imageHeight height of original image (pixels)
    */
   changePosition(imageWidth, imageHeight) {
-    const centre = canvas.scene._viewPosition; // Middle of the screen
+    const centre = getCanvasView(); // Middle of the screen (v13/v14 safe)
     let imageWidthScaled =
       window.innerWidth / (imageSizeSetting * centre.scale); // Scaled width of image to canvas
     let imageHeightScaled = imageWidthScaled * (imageHeight / imageWidth); // Scaled height from width
@@ -325,13 +466,19 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
    */
   showArtworkRequirements(token, hovered, delay) {
     /**
-     * check token is actor, module is enabled, user has permissions to see character art
+     * check token is actor, module is enabled, user has permissions to see
+     * character art. Permission threshold is read fresh so a GM change reaches
+     * every client without them reopening settings.
      */
+    const actorRequirement = game.settings.get(
+      "image-hover",
+      "permissionOnHover"
+    );
     if (
       !token ||
       !token.actor ||
       imageHoverActive === false ||
-      (token.actor.permission < actorRequirementSetting &&
+      (token.actor.permission < actorRequirement &&
         token.actor.ownership["default"] !== -1)
     ) {
       return;
@@ -343,51 +490,63 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
     if (token.document.getFlag("image-hover", "hideArt")) return;
 
     /**
+     * Suppress popup during combat if the GM has opted in. Read fresh so the
+     * value propagates to players (who never trigger closeSettingsConfig
+     * locally for GM-only world settings).
+     */
+    if (
+      game.settings.get("image-hover", "disableDuringCombat") &&
+      game.combat?.started
+    ) {
+      return;
+    }
+
+    /**
+     * Suppress popup for tokens tagged via the Tagger module.
+     */
+    if (hasExcludedTag(token)) return;
+
+    /**
      * option to never show image of a token subject to filtering (e.g. imprecise vision on PF2E)
      */
     if (token.detectionFilter && !game.user.isGM) return;
 
     /**
-     * Do not show art for chat portrait module (hover hook doesn't trigger out properly).
+     * Do not show art when hovering over a chat portrait (chat-portrait module
+     * does not fire the hover-out hook reliably).
      */
-    if (chatPortraitActive) {
-      if (event) {
-        var x = event.clientX;
-        var y = event.clientY;
-        if (x && y) {
-          var elementMouseIsOver = document.elementFromPoint(x, y); // element where mouse is
-          if (
-            elementMouseIsOver.classList.contains("message-portrait") ||
-            elementMouseIsOver.classList.contains("chat-message")
-          ) {
-            return;
-          }
-          if (
-            elementMouseIsOver.classList.value &&
-            elementMouseIsOver.classList.value.includes("chat-portrait")
-          ) {
-            return;
-          }
+    if (chatPortraitActive && lastPointerEvent) {
+      const { clientX: x, clientY: y } = lastPointerEvent;
+      if (x && y) {
+        const classes = document.elementFromPoint(x, y)?.classList;
+        if (
+          classes?.contains("message-portrait") ||
+          classes?.contains("chat-message") ||
+          (classes?.value && classes.value.includes("chat-portrait"))
+        ) {
+          return;
         }
       }
     }
 
     /**
-     * Hide art when dragging a token.
+     * Hide art when dragging a token (mouse button held).
      */
-    if (event && event.buttons > 0) return;
+    if (lastPointerEvent && lastPointerEvent.buttons > 0) return;
 
     /**
      * Do not show new art or hide current art if GM has triggerd the "showToAll" option for "showArtTimer" seconds.
      */
     if (showSpecificArt) return;
 
+    // Clear any pending delayed show so rapid hover changes do not race.
+    clearTimeout(hoverTimer);
     if (
       hovered &&
       canvas.activeLayer instanceof foundry.canvas.layers.TokenLayer
     ) {
       // Show token image if hovered, otherwise don't
-      setTimeout(function () {
+      hoverTimer = setTimeout(() => {
         if (
           token == canvas.tokens.hover &&
           token.actor.img == canvas.tokens.hover.actor.img
@@ -414,10 +573,11 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
       showSpecificArt = true; // condition to keep art on screen
       canvas.hud.imageHover.bind(token);
       clearTimeout(timer); //reset timer if key is pressed again
+      const duration = game.settings.get("image-hover", "showArtTimer");
       timer = setTimeout(function () {
         showSpecificArt = false;
         canvas.hud.imageHover.close();
-      }, showArtTimer); //after set amount of time, clear image
+      }, duration); //after set amount of time, clear image
     }
   }
 }
@@ -433,11 +593,14 @@ Hooks.on("renderHeadsUpDisplayContainer", (app, html, data) => {
   canvas.hud.imageHover = new ImageHoverHUD();
 
   /**
-   * renderHeadsUpDisplay is called when changing scene, use this to cache token images on the scene.
+   * renderHeadsUpDisplayContainer is called when changing scene. Reset the
+   * dimension cache so it stays bounded to the current scene, then re-cache
+   * the tokens that are present.
    */
+  cacheImageNames = {};
   canvas.hud.imageHover.cacheAvailableToken(DEFAULT_TOKEN, false);
   for (const token of canvas.tokens.placeables) {
-    if (!token || !token.actor) return;
+    if (!token || !token.actor) continue;
     if (!(token.actor.img in cacheImageNames)) {
       canvas.hud.imageHover.cacheAvailableToken(token.actor.img, false);
     } else if (token.actor.img === DEFAULT_TOKEN) {
@@ -453,10 +616,10 @@ Hooks.on("renderHeadsUpDisplayContainer", (app, html, data) => {
  * Cache token image upon creating a actor.
  */
 Hooks.on("createToken", (token, options, userId) => {
-  const tokenId = game.actors.get(token.actorId);
-  if (!tokenId) return;
+  const actor = game.actors.get(token.actorId);
+  if (!actor) return;
 
-  let imageToCache = tokenId.img;
+  let imageToCache = actor.img;
   if (imageToCache === DEFAULT_TOKEN) {
     imageToCache = token.texture.src;
   }
@@ -474,6 +637,7 @@ Hooks.on("createToken", (token, options, userId) => {
 Hooks.on("hoverToken", (token, hovered) => {
   if (showSpecificArt || canvas.hud.imageHover === undefined) return;
   if (!hovered) {
+    clearTimeout(hoverTimer); // cancel any pending delayed show
     canvas.hud.imageHover.close();
     return;
   }
@@ -501,13 +665,14 @@ const renderHoverSetting = async (app, html, data) => {
    * Ensure flag is updated on "update" and correct value is shown when changed.
    */
   if (data.isGM) {
-    const token = app.token;
+    // v14 standardizes on `app.document`; v13's TokenApplication still exposes `app.token`.
+    const token = app.document ?? app.token;
 
-    const hideImageStatus = (await token.getFlag("image-hover", "hideArt"))
+    const hideImageStatus = token.getFlag("image-hover", "hideArt")
       ? "checked"
       : "";
     const specificImageStatus =
-      (await token.getFlag("image-hover", "specificArt")) || "path/image.png";
+      token.getFlag("image-hover", "specificArt") || "path/image.png";
 
     data.hideHoverStatus = hideImageStatus;
     data.specificArtStatus = specificImageStatus;
@@ -549,6 +714,63 @@ const renderHoverSetting = async (app, html, data) => {
   }
 };
 Hooks.on("renderTokenApplication", renderHoverSetting);
+
+/**
+ * Settings dialog tweaks:
+ *  - Disable the "Exclude tokens with these tags" field when the Tagger
+ *    module is not installed/enabled, and notify the user if they click it.
+ *  - Show the graphic position/scale fields only while a graphic is configured.
+ */
+Hooks.on("renderSettingsConfig", (app, html, data) => {
+  const root = html instanceof jQuery ? html[0] : html;
+  if (!root?.querySelector) return;
+
+  // Disable the exclude-tags field when the Tagger module is absent.
+  if (!game.modules.get("tagger")?.active) {
+    const tagInput = root.querySelector('[name="image-hover.excludeTags"]');
+    if (tagInput) {
+      tagInput.disabled = true;
+      tagInput.placeholder = "Requires the Tagger module";
+      const wrapper = tagInput.closest(".form-group") ?? tagInput.parentElement;
+      let notified = false;
+      wrapper?.addEventListener("click", () => {
+        if (notified) return; // notify once per opened settings dialog
+        notified = true;
+        ui.notifications?.warn(
+          "Image Hover: this setting requires the Tagger module (https://github.com/fantasycalendar/FoundryVTT-Tagger). Install and enable it to use tag-based exclusions."
+        );
+      });
+    }
+  }
+
+  // Show the graphic position/scale fields only while a graphic is configured.
+  // A filePicker setting renders as a <file-picker> element, not <input>, so
+  // the selector must not be tag-qualified.
+  const graphicInput = root.querySelector(
+    '[name="image-hover.overlayGraphic"]'
+  );
+  if (graphicInput) {
+    const dependentRows = [
+      "image-hover.overlayGraphicScale",
+      "image-hover.overlayGraphicX",
+      "image-hover.overlayGraphicY",
+      "image-hover.overlayGraphicZ",
+      "image-hover.tokenImageScale",
+    ]
+      .map((name) => root.querySelector(`[name="${name}"]`))
+      .map((field) => field?.closest(".form-group"))
+      .filter((row) => row);
+    const syncGraphicRows = () => {
+      const show = String(graphicInput.value ?? "").trim().length > 0;
+      for (const row of dependentRows) {
+        row.style.display = show ? "" : "none";
+      }
+    };
+    syncGraphicRows();
+    graphicInput.addEventListener("input", syncGraphicRows);
+    graphicInput.addEventListener("change", syncGraphicRows);
+  }
+});
 
 /**
  * Clear art unless GM is showing users art.
