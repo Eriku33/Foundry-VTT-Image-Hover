@@ -56,6 +56,28 @@ function getCanvasView() {
 }
 
 /**
+ * Per-token art type choices (token configuration drop-down).
+ * "default" defers to the world setting "artType".
+ */
+const tokenArtTypeChoices = {
+  default: "Default",
+  character: "Character art",
+  token: "Token art",
+};
+
+/**
+ * Get the art type to use for a token.
+ * A per-token override ("character" or "token") takes priority over the world setting.
+ * @param {TokenDocument} tokenDocument token document to check for an override flag.
+ * @return {String} art type ("character", "token", "wildcard" or "linked").
+ */
+function getArtType(tokenDocument) {
+  const override = tokenDocument?.getFlag("image-hover", "artType");
+  if (override === "character" || override === "token") return override;
+  return imageHoverArt;
+}
+
+/**
  * Add socket to trigger all users to show art.
  */
 function registerShowArtSocket() {
@@ -94,15 +116,16 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
     let image = tokenObject.actor.img; // Character art
     const isWildcard = tokenObject.actor.prototypeToken.randomImg;
     const isLinkedActor = tokenObject.document.actorLink;
+    const artType = getArtType(tokenObject.document); // per-token override or world setting
 
     /**
      * Don't use character art if it doesn't exist or settings are applied.
      */
     if (
       image == DEFAULT_TOKEN ||
-      imageHoverArt === "token" ||
-      (imageHoverArt === "wildcard" && isWildcard) ||
-      (imageHoverArt == "linked" && !isLinkedActor)
+      artType === "token" ||
+      (artType === "wildcard" && isWildcard) ||
+      (artType == "linked" && !isLinkedActor)
     ) {
       image = tokenObject.document.texture.src; // Token art
     }
@@ -152,6 +175,7 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
     let url = this.object.actor.img; // Character art
     const isWildcard = this.object.actor.prototypeToken.randomImg;
     const isLinkedActor = this.object.document.actorLink;
+    const artType = getArtType(this.object.document); // per-token override or world setting
 
     /**
      * Check for show specific art option on token.
@@ -165,9 +189,9 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
       url = specificArtSelected;
     } else if (
       url == DEFAULT_TOKEN ||
-      imageHoverArt === "token" ||
-      (imageHoverArt === "wildcard" && isWildcard) ||
-      (imageHoverArt == "linked" && !isLinkedActor)
+      artType === "token" ||
+      (artType === "wildcard" && isWildcard) ||
+      (artType == "linked" && !isLinkedActor)
     ) {
       // If no character art exists, use token art instead.
       if (this.object.document.texture.src == DEFAULT_TOKEN) {
@@ -356,6 +380,11 @@ class ImageHoverHUD extends HandlebarsApplicationMixin(
     if (token.document.getFlag("image-hover", "hideArt")) return;
 
     /**
+     * hide art if token disposition is "secret"
+     */
+    if (token.document.disposition === CONST.TOKEN_DISPOSITIONS.SECRET) return;
+
+    /**
      * option to never show image of a token subject to filtering (e.g. imprecise vision on PF2E)
      */
     if (token.detectionFilter && !game.user.isGM) return;
@@ -506,6 +535,7 @@ Hooks.on("hoverToken", (token, hovered) => {
 /**
  * Add extra settings for game masters in the token configuration.
  * A checkbox option to hide image art to all.
+ * A drop-down to override the world "artType" setting for this token.
  * A file picker to show a specific file for that token on hover.
  */
 const renderHoverSetting = async (app, html, data) => {
@@ -514,7 +544,7 @@ const renderHoverSetting = async (app, html, data) => {
    * Ensure flag is updated on "update" and correct value is shown when changed.
    */
   if (data.isGM) {
-    const token = app.document ?? app.token;
+    const token = app.token;
 
     const hideImageStatus = (await token.getFlag("image-hover", "hideArt"))
       ? "checked"
@@ -522,8 +552,13 @@ const renderHoverSetting = async (app, html, data) => {
     const specificImageStatus =
       (await token.getFlag("image-hover", "specificArt")) || "path/image.png";
 
+    const artTypeStatus =
+      (await token.getFlag("image-hover", "artType")) || "default";
+
     data.hideHoverStatus = hideImageStatus;
     data.specificArtStatus = specificImageStatus;
+    data.artTypeChoices = tokenArtTypeChoices;
+    data.artTypeStatus = artTypeStatus;
 
     // Convert html to native DOM element if it's a jQuery object
     const rootEl = html instanceof jQuery ? html[0] : html;
